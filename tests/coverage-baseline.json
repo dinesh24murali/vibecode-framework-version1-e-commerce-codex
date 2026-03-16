@@ -1,0 +1,4 @@
+{
+  "_comment": "Add per-package coverage thresholds here as packages are built. AI tools: never let actual coverage fall below these values.",
+  "packages": {}
+}

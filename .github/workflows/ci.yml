@@ -1,0 +1,113 @@
+# CI Pipeline — [[PROJECT_NAME]]
+#
+# Replace the [[PLACEHOLDER]] tokens with your actual commands.
+# See docs/02_outputs/06_dev_setup.md for the full dev setup guide.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    # Uncomment and configure services as needed:
+    # services:
+    #   postgres:
+    #     image: postgres:16
+    #     env:
+    #       POSTGRES_PASSWORD: postgres
+    #       POSTGRES_DB: testdb
+    #     ports: ["5432:5432"]
+    #     options: >-
+    #       --health-cmd pg_isready
+    #       --health-interval 10s
+    #       --health-timeout 5s
+    #       --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up environment
+        # Replace with your language/runtime setup action, e.g.:
+        # uses: actions/setup-node@v4  with: { node-version: '20' }
+        # uses: actions/setup-python@v5  with: { python-version: '3.12' }
+        # uses: actions/setup-go@v5  with: { go-version: '1.22' }
+        run: echo "[[RUNTIME_SETUP]] — replace this step"
+
+      - name: Install dependencies
+        run: |
+          # [[INSTALL_COMMAND]]
+          # e.g. npm ci | pip install -r requirements.txt | go mod download
+          echo "replace with your install command"
+
+      - name: Check environment
+        run: |
+          cp .env.example .env
+          # Fill in CI-specific env vars via GitHub Secrets:
+          # echo "DATABASE_URL=${{ secrets.CI_DATABASE_URL }}" >> .env
+          bash verify/scripts/check-env.sh
+
+      - name: Run linter
+        run: |
+          # [[CI_LINT_COMMAND]]
+          # e.g. npm run lint | ruff check . | golangci-lint run
+          echo "replace with your lint command"
+
+      - name: Run tests
+        run: |
+          # [[CI_TEST_COMMAND]]
+          # e.g. npm test | pytest | go test ./...
+          echo "replace with your test command"
+
+      - name: Check coverage
+        run: |
+          # [[CI_COVERAGE_COMMAND]]
+          # Verify coverage meets thresholds in tests/coverage-baseline.json
+          echo "replace with your coverage check command"
+
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: test
+    # Only run e2e on PRs to main to save CI time
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up environment
+        run: echo "[[RUNTIME_SETUP]] — replace this step"
+
+      - name: Install dependencies
+        run: echo "[[INSTALL_COMMAND]] — replace this step"
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Start app
+        run: |
+          # [[START_APP_COMMAND]] &
+          # e.g. npm run start & | python manage.py runserver &
+          echo "replace with your app start command"
+
+      - name: Run E2E tests
+        run: bash verify/scripts/run-e2e.sh
+        env:
+          APP_URL: http://localhost:3000  # adjust port
+          CI: "true"
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

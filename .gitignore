@@ -1,0 +1,99 @@
+# ── Secrets ────────────────────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+secrets/
+
+# ── OS ─────────────────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ── IDE ─────────────────────────────────────────────────────────────────────────
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.swp
+*.swo
+*~
+
+# ── Node / JS / TS ──────────────────────────────────────────────────────────────
+node_modules/
+dist/
+build/
+.next/
+.nuxt/
+.svelte-kit/
+out/
+.turbo/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+.yarn/cache
+.yarn/unplugged
+
+# ── Python ──────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+.eggs/
+.venv/
+venv/
+env/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.hypothesis/
+*.pyc
+
+# ── Go ──────────────────────────────────────────────────────────────────────────
+bin/
+/tmp/
+
+# ── Ruby ────────────────────────────────────────────────────────────────────────
+.bundle/
+vendor/bundle/
+.gem/
+
+# ── Rust ────────────────────────────────────────────────────────────────────────
+target/
+
+# ── Test & Coverage ─────────────────────────────────────────────────────────────
+coverage/
+.coverage
+*.lcov
+lcov.info
+playwright-report/
+test-results/
+*.snap
+junit.xml
+
+# ── Build artifacts ─────────────────────────────────────────────────────────────
+*.log
+*.pid
+*.seed
+*.gz
+*.tar
+*.zip
+
+# ── Database ────────────────────────────────────────────────────────────────────
+*.sqlite
+*.sqlite3
+*.db
+dump.rdb
