@@ -69,8 +69,8 @@ Don't focus on the success of the project
     - there will one button to add the product to cart.
     - It should show the product images similar to Amazon with Zoom feature
 14. The website should be mobile responsive
-15. Use Zustand plugin for state management in NextJS
-16. Need to follow SOLID principles and other relevant design patterns in the server side. Do something similar to the frontend.
+15. Use Zustand V5 plugin for state management in NextJS
+16. Need to follow SOLID principles, Abstract Factory, Adapter, Builder, Bridge,  and other relevant design patterns in the server side. Do something similar to the frontend.
 
 **3.2 List features explicitly OUT of scope for v1:**
 1. `Printing Services` page
