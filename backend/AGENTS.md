@@ -2,10 +2,10 @@
 
 ## Stack
 
-- **Language:** `[[BACKEND_LANG]]`
-- **Framework:** `[[BACKEND_FRAMEWORK]]`
-- **Database:** `[[DATABASE]]`
-- **Auth:** `[[AUTH_STRATEGY]]`
+- **Language:** `Go 1.26`
+- **Framework:** `Gin Web Framework`
+- **Database:** `Postgres`
+- **Auth:** `JWT`
 
 > Replace these placeholders with your actual stack after cloning.
 
@@ -56,7 +56,7 @@
 ## Running Locally
 
 ```bash
-# Fill in with actual commands for [[BACKEND_LANG]]
+# Fill in with actual commands for Go 1.26
 # Example for Go:
 # cd backend && go run ./cmd/server
 ```

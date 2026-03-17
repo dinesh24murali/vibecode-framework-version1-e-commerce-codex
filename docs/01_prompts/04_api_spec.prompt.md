@@ -14,10 +14,10 @@ This spec is the **single source of truth** for the API. The frontend client wil
 
 ## Project Input
 
-**Project name:** [[PROJECT_NAME]]
-**Backend:** [[BACKEND_LANG]] / [[BACKEND_FRAMEWORK]]
-**Auth strategy:** [[AUTH_STRATEGY]]
-**Database:** [[DATABASE]]
+**Project name:** e-commerce-site
+**Backend:** Go 1.26 / Gin Web Framework
+**Auth strategy:** JWT
+**Database:** Postgres
 
 **v1 Features:**
 [[Fill from intake 3.1]]
@@ -33,7 +33,7 @@ Generate a complete OpenAPI 3.1 YAML spec with:
 
 1. **Info block** — title, version `1.0.0`, description
 2. **Servers** — `http://localhost:8080` for dev; add staging/prod stubs
-3. **Security schemes** — matching `[[AUTH_STRATEGY]]` (e.g. BearerAuth for JWT)
+3. **Security schemes** — matching `JWT` (e.g. BearerAuth for JWT)
 4. **Tags** — one per feature area
 5. **Paths** — for every v1 feature, define:
    - All CRUD endpoints that make sense

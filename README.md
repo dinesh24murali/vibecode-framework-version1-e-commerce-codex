@@ -1,4 +1,4 @@
-# [[PROJECT_NAME]] — Vibecode Framework
+# e-commerce-site — Vibecode Framework
 
 > A provider-agnostic vibe-coding framework. Works with Claude Code, Cursor, Codex, Gemini, or any AI tool.
 
@@ -12,7 +12,7 @@ git clone <this-repo> my-project
 cd my-project
 
 # 2. Find-and-replace all placeholders
-#    [[PROJECT_NAME]], [[BACKEND_LANG]], [[FRONTEND_FRAMEWORK]], etc.
+#    e-commerce-site, Go, NextJS 16, etc.
 #    See AGENTS.md §6 for the full placeholder list
 
 # 3. Scaffold directories

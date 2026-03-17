@@ -7,22 +7,22 @@
 
 ## Project Identity
 
-- **Name:** `[[PROJECT_NAME]]`
-- **Description:** `[[PROJECT_DESCRIPTION]]`
-- **Team:** `[[TEAM_NAME]]`
-- **Repo:** `[[REPO_URL]]`
-- **Started:** `[[PROJECT_START_DATE]]`
+- **Name:** `e-commerce-site`
+- **Description:** `This is a simple e-commerce-site for selling books`
+- **Team:** `Feather Tech`
+- **Repo:** `https://github.com/dinesh24murali/vibecode-framework-version1-e-commerce-codex`
+- **Started:** `16-3-2026`
 
 ## Tech Stack
 
 | Layer | Technology | Version |
 |-------|-----------|---------|
-| Backend lang | `[[BACKEND_LANG]]` | |
-| Backend framework | `[[BACKEND_FRAMEWORK]]` | |
-| Frontend | `[[FRONTEND_FRAMEWORK]]` | |
-| Database | `[[DATABASE]]` | |
-| Auth | `[[AUTH_STRATEGY]]` | |
-| Deployment | `[[DEPLOYMENT_TARGET]]` | |
+| Backend lang | `Go 1.26` | |
+| Backend framework | `Gin Web Framework` | |
+| Frontend | `NextJS 16` | |
+| Database | `Postgres` | |
+| Auth | `JWT` | |
+| Deployment | `AWS` | |
 | CI/CD | `[[CI_CD_TOOL]]` | |
 
 ## Key Architectural Decisions
@@ -36,9 +36,9 @@
 
 | Env | URL | Notes |
 |-----|-----|-------|
-| Local | `http://localhost:[[APP_PORT]]` | |
-| Staging | `[[STAGING_URL]]` | |
-| Production | `[[PROD_URL]]` | |
+| Local | `http://localhost:3000` | |
+| Staging | `None` | |
+| Production | `https://cubiximprint.com/` | |
 
 ## External Services
 

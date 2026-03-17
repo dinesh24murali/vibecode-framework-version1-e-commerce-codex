@@ -12,12 +12,12 @@ You are a principal engineer. Generate a **production-ready technical architectu
 
 ## Project Input
 
-**Project name:** [[PROJECT_NAME]]
-**Backend lang / framework:** [[BACKEND_LANG]] / [[BACKEND_FRAMEWORK]]
-**Frontend:** [[FRONTEND_FRAMEWORK]]
-**Database:** [[DATABASE]]
-**Deployment target:** [[DEPLOYMENT_TARGET]]
-**Auth strategy:** [[AUTH_STRATEGY]]
+**Project name:** e-commerce-site
+**Backend lang / framework:** Go 1.26 / Gin Web Framework
+**Frontend:** NextJS 16
+**Database:** Postgres
+**Deployment target:** AWS
+**Auth strategy:** JWT
 **Scale:** [[Fill from intake 7.1–7.2]]
 **Compliance:** [[Fill from intake 7.4]]
 **Containerized:** [[Fill from intake 6.2]]
@@ -38,7 +38,7 @@ You are a principal engineer. Generate a **production-ready technical architectu
    - Indexing strategy
    - Migration strategy
 4. **API Design Principles** — REST vs GraphQL vs RPC decision, versioning strategy, pagination pattern
-5. **Authentication & Authorization Flow** — sequence diagram (Mermaid) of the [[AUTH_STRATEGY]] flow
+5. **Authentication & Authorization Flow** — sequence diagram (Mermaid) of the JWT flow
 6. **Infrastructure & Deployment**
    - Environment topology (dev / staging / prod)
    - Container / serverless configuration

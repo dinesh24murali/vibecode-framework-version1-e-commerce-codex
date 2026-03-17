@@ -12,11 +12,11 @@ You are a senior DevOps engineer and developer advocate. Generate a **complete d
 
 ## Project Input
 
-**Project name:** [[PROJECT_NAME]]
-**Backend:** [[BACKEND_LANG]] / [[BACKEND_FRAMEWORK]]
-**Frontend:** [[FRONTEND_FRAMEWORK]]
-**Database:** [[DATABASE]]
-**Auth strategy:** [[AUTH_STRATEGY]]
+**Project name:** e-commerce-site
+**Backend:** Go 1.26 / Gin Web Framework
+**Frontend:** NextJS 16
+**Database:** Postgres
+**Auth strategy:** JWT
 **Containerized:** [[Fill from intake 6.2]]
 **CI/CD:** [[Fill from intake 6.3]]
 **Environments:** [[Fill from intake 6.4]]

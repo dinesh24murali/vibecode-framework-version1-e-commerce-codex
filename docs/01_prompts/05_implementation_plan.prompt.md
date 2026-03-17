@@ -12,12 +12,12 @@ You are a senior engineering lead. Generate a **phased implementation plan** tha
 
 ## Project Input
 
-**Project name:** [[PROJECT_NAME]]
-**Backend:** [[BACKEND_LANG]] / [[BACKEND_FRAMEWORK]]
-**Frontend:** [[FRONTEND_FRAMEWORK]]
-**Database:** [[DATABASE]]
-**Auth strategy:** [[AUTH_STRATEGY]]
-**Deployment target:** [[DEPLOYMENT_TARGET]]
+**Project name:** e-commerce-site
+**Backend:** Go 1.26 / Gin Web Framework
+**Frontend:** NextJS 16
+**Database:** Postgres
+**Auth strategy:** JWT
+**Deployment target:** AWS
 **CI/CD:** [[Fill from intake 6.3]]
 
 **v1 Features:**

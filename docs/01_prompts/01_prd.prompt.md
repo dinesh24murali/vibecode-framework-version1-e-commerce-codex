@@ -14,9 +14,9 @@ The PRD must be structured for an engineering team to begin implementation immed
 
 ## Project Input
 
-**Project name:** [[PROJECT_NAME]]
-**Description:** [[PROJECT_DESCRIPTION]]
-**Team:** [[TEAM_NAME]]
+**Project name:** e-commerce-site
+**Description:** This is a simple e-commerce-site for selling books
+**Team:** Feather Tech
 
 **Primary users:** [[Fill from intake 2.1]]
 **Problem being solved:** [[Fill from intake 2.2]]

@@ -7,12 +7,12 @@
 
 ## 1. Project Overview
 
-- **Project name:** `[[PROJECT_NAME]]`
-- **Description:** `[[PROJECT_DESCRIPTION]]`
-- **Backend:** `[[BACKEND_LANG]]` / `[[BACKEND_FRAMEWORK]]`
-- **Frontend:** `[[FRONTEND_FRAMEWORK]]`
-- **Database:** `[[DATABASE]]`
-- **Deployment target:** `[[DEPLOYMENT_TARGET]]`
+- **Project name:** `e-commerce-site`
+- **Description:** `This is a simple e-commerce-site for selling books`
+- **Backend:** `Go 1.26` / `Gin Web Framework`
+- **Frontend:** `NextJS 16`
+- **Database:** `Postgres`
+- **Deployment target:** `AWS`
 
 ---
 
@@ -121,8 +121,8 @@ Each folder has its own `AGENTS.md` with folder-specific instructions.
 - `tasks/AGENTS.md` — task workflow and scratch file convention
 - `tests/AGENTS.md` — coverage gates and test conventions
 - `verify/AGENTS.md` — verification protocol
-- `backend/AGENTS.md` — backend conventions (`[[BACKEND_LANG]]`)
-- `frontend/AGENTS.md` — frontend conventions (`[[FRONTEND_FRAMEWORK]]`)
+- `backend/AGENTS.md` — backend conventions (`Go 1.26`)
+- `frontend/AGENTS.md` — frontend conventions (`NextJS 16`)
 
 ---
 
@@ -132,22 +132,22 @@ When you clone this framework, find-and-replace these tokens:
 
 | Token | Replace with |
 |-------|-------------|
-| `[[PROJECT_NAME]]` | Your project name |
-| `[[PROJECT_DESCRIPTION]]` | One-sentence description |
-| `[[BACKEND_LANG]]` | e.g. `Go`, `Python`, `Node.js` |
-| `[[BACKEND_FRAMEWORK]]` | e.g. `Gin`, `FastAPI`, `Express` |
-| `[[FRONTEND_FRAMEWORK]]` | e.g. `React`, `Vue`, `SvelteKit` |
-| `[[DATABASE]]` | e.g. `PostgreSQL`, `SQLite`, `MongoDB` |
-| `[[DEPLOYMENT_TARGET]]` | e.g. `AWS`, `GCP`, `Fly.io`, `Vercel` |
-| `[[TEAM_NAME]]` | Your team or company name |
-| `[[AUTH_STRATEGY]]` | e.g. `JWT`, `OAuth2`, `Session` |
-| `[[UI_LIBRARY]]` | e.g. `shadcn/ui`, `Material UI`, `Tailwind`, `none` |
+| `e-commerce-site` | Your project name |
+| `This is a simple e-commerce-site for selling books` | One-sentence description |
+| `Go 1.26` | e.g. `Go 1.26`, `Python`, `Node.js` |
+| `Gin Web Framework` | e.g. `Gin`, `FastAPI`, `Express` |
+| `NextJS 16` | e.g. `React`, `Vue`, `SvelteKit` |
+| `Postgres` | e.g. `PostgreSQL`, `SQLite`, `MongoDB` |
+| `AWS` | e.g. `AWS`, `GCP`, `Fly.io`, `Vercel` |
+| `Feather Tech` | Your team or company name |
+| `JWT` | e.g. `JWT`, `OAuth2`, `Session` |
+| `shadcn/ui` | e.g. `shadcn/ui`, `Material UI`, `Tailwind`, `none` |
 | `[[CODEGEN_COMMAND]]` | Command to regenerate frontend API client from OpenAPI spec |
-| `[[CI_CD_TOOL]]` | e.g. `GitHub Actions`, `GitLab CI`, `CircleCI` |
-| `[[CI_TEST_COMMAND]]` | e.g. `npm test`, `pytest`, `go test ./...` |
-| `[[CI_LINT_COMMAND]]` | e.g. `npm run lint`, `ruff check .`, `golangci-lint run` |
-| `[[REPO_URL]]` | Full URL of the git repository |
-| `[[APP_PORT]]` | Local dev server port, e.g. `3000`, `8080` |
-| `[[STAGING_URL]]` | Staging environment URL |
-| `[[PROD_URL]]` | Production URL |
-| `[[PROJECT_START_DATE]]` | Date project was started (YYYY-MM-DD) |
+| `None` | e.g. `GitHub Actions`, `GitLab CI`, `CircleCI` |
+| `go test ./..` | e.g. `npm test`, `pytest`, `go test ./...` |
+| `golangci-lint run` | e.g. `npm run lint`, `ruff check .`, `golangci-lint run` |
+| `https://github.com/dinesh24murali/vibecode-framework-version1-e-commerce-codex` | Full URL of the git repository |
+| `3000` | Local dev server port, e.g. `3000`, `8080` |
+| `None` | Staging environment URL |
+| `https://cubiximprint.com/` | Production URL |
+| `16-3-2026` | Date project was started (YYYY-MM-DD) |

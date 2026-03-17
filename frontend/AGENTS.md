@@ -2,8 +2,8 @@
 
 ## Stack
 
-- **Framework:** `[[FRONTEND_FRAMEWORK]]`
-- **UI library:** `[[UI_LIBRARY]]`
+- **Framework:** `NextJS 16`
+- **UI library:** `shadcn/ui`
 - **API client:** generated from `docs/02_outputs/04_api_spec.yaml`
 
 > Replace these placeholders with your actual stack after cloning.
@@ -55,7 +55,7 @@
 ## Running Locally
 
 ```bash
-# Fill in with actual commands for [[FRONTEND_FRAMEWORK]]
+# Fill in with actual commands for NextJS 16
 # Example for Next.js:
 # cd frontend && npm run dev
 ```

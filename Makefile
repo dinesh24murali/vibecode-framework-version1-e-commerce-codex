@@ -2,7 +2,7 @@
 
 ## scaffold: Create the initial project structure (run once after cloning)
 scaffold:
-	@echo "Scaffolding [[PROJECT_NAME]]..."
+	@echo "Scaffolding e-commerce-site..."
 	@mkdir -p docs/02_outputs
 	@mkdir -p tasks/active tasks/done
 	@mkdir -p tests/e2e tests/contract

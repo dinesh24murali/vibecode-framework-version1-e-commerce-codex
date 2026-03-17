@@ -1,7 +1,7 @@
 # Task: 000-project-setup
 
 **Status:** done
-**Created:** [[PROJECT_START_DATE]]
+**Created:** 16-3-2026
 **ADR refs:** ADR-0001
 
 ---
@@ -37,9 +37,9 @@ This is always the first task for any project using the vibecode framework. It m
 | File | Action |
 |------|--------|
 | `AGENTS.md` | Replaced all `[[PLACEHOLDER]]` tokens |
-| `README.md` | Replaced `[[PROJECT_NAME]]` |
-| `Makefile` | Replaced `[[PROJECT_NAME]]` |
-| `.env.example` | Replaced `[[AUTH_STRATEGY]]` |
+| `README.md` | Replaced `e-commerce-site` |
+| `Makefile` | Replaced `e-commerce-site` |
+| `.env.example` | Replaced `JWT` |
 | `backend/AGENTS.md` | Replaced stack placeholders |
 | `frontend/AGENTS.md` | Replaced stack + codegen command |
 | `adr/0001-use-vibecode-framework.md` | Filled in date and team |

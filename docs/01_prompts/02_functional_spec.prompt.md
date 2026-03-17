@@ -14,11 +14,11 @@ Use the PRD at `docs/02_outputs/01_prd.md` as input. If it is not yet available,
 
 ## Project Input
 
-**Project name:** [[PROJECT_NAME]]
-**Backend:** [[BACKEND_LANG]] / [[BACKEND_FRAMEWORK]]
-**Frontend:** [[FRONTEND_FRAMEWORK]]
-**Auth strategy:** [[AUTH_STRATEGY]]
-**Database:** [[DATABASE]]
+**Project name:** e-commerce-site
+**Backend:** Go 1.26 / Gin Web Framework
+**Frontend:** NextJS 16
+**Auth strategy:** JWT
+**Database:** Postgres
 
 **v1 Features:**
 [[Fill from intake 3.1]]
