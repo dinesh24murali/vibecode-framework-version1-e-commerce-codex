@@ -6,6 +6,7 @@
 | File | Domain | Summary |
 |------|--------|---------|
 | `memory/project.md` | project | Stack, environments, key decisions, open questions |
+| `memory/product.md` | product | Storefront scope, product rules, order status rules, and seed data expectations |
 
 ---
 

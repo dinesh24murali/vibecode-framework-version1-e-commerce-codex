@@ -10,6 +10,7 @@ Format: `- [YYYY-MM-DD] <task-name>: <one-line summary>`
 ## Unreleased
 
 <!-- AI: add entries here as tasks are completed -->
+- [2026-03-23] 001-generate-prd: docs: added the v1 product requirements document and product scope memory
 
 ---
 
