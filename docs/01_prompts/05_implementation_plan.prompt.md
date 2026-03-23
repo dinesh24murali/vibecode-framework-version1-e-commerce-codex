@@ -14,7 +14,7 @@ You are a senior engineering lead. Generate a **phased implementation plan** tha
 
 **Project name:** e-commerce-site
 **Backend:** Go 1.26 / Gin Web Framework
-**Frontend:** NextJS 16
+**Frontend:** NextJS 16 Static Site Generation
 **Database:** Postgres
 **Auth strategy:** JWT
 **Deployment target:** AWS

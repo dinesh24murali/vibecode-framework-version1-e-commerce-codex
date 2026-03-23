@@ -19,7 +19,7 @@
 |-------|-----------|---------|
 | Backend lang | `Go 1.26` | |
 | Backend framework | `Gin Web Framework` | |
-| Frontend | `NextJS 16` | |
+| Frontend | `NextJS 16 Static Site Generation` | |
 | Database | `Postgres` | |
 | Auth | `JWT` | |
 | Deployment | `AWS` | |

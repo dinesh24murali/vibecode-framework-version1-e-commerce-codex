@@ -14,7 +14,7 @@ You are a senior DevOps engineer and developer advocate. Generate a **complete d
 
 **Project name:** e-commerce-site
 **Backend:** Go 1.26 / Gin Web Framework
-**Frontend:** NextJS 16
+**Frontend:** NextJS 16 Static Site Generation
 **Database:** Postgres
 **Auth strategy:** JWT
 **Containerized:** [[Fill from intake 6.2]]

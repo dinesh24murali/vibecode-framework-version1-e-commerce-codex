@@ -16,7 +16,7 @@ Use the PRD at `docs/02_outputs/01_prd.md` as input. If it is not yet available,
 
 **Project name:** e-commerce-site
 **Backend:** Go 1.26 / Gin Web Framework
-**Frontend:** NextJS 16
+**Frontend:** NextJS 16 Static Site Generation
 **Auth strategy:** JWT
 **Database:** Postgres
 

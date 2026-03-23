@@ -2,7 +2,7 @@
 
 ## Stack
 
-- **Framework:** `NextJS 16`
+- **Framework:** `NextJS 16 Static Site Generation`
 - **UI library:** `shadcn/ui`
 - **API client:** generated from `docs/02_outputs/04_api_spec.yaml`
 
@@ -55,7 +55,7 @@
 ## Running Locally
 
 ```bash
-# Fill in with actual commands for NextJS 16
+# Fill in with actual commands for NextJS 16 Static Site Generation
 # Example for Next.js:
 # cd frontend && npm run dev
 ```

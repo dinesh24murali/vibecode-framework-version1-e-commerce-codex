@@ -53,13 +53,28 @@ The PRD must be structured for an engineering team to begin implementation immed
     - Will show the details regarding a single product
     - there will one button to add the product to cart.
     - It should show the product images similar to Amazon with Zoom feature
-14. The website should be mobile responsive
-15. Use Zustand V5 plugin for state management in NextJS
-16. Need to follow SOLID principles, Abstract Factory, Adapter, Builder, Bridge,  and other relevant design patterns in the server side. Do something similar to the frontend.
+14. The checkout page should do the necessary tax calculations on the items that are in the cart
+    - If the cart is empty the user should not be allowed to access the checkout page
+    - The checkout page will have an option to add a coupon code
+    - The coupon code can either be flat offer of certain number or percentage of the total bill
+    - The coupon can be added using a script to the DB in the server side   
+15. The website should be mobile responsive
+16. The frontend is a static site generated using NextJS V16. Follow the App Router architecture with route groups, and  Static Site Generation (SSG) with generateStaticParams
+17. Need to follow SOLID principles, Abstract Factory, Adapter, Builder, Bridge,  and other relevant design patterns in the server side.
+18. Use Zustand V5 plugin for state management in NextJS. Follow Zustand store slice pattern
+19. Need a login page for the site administrator so that he can access the admin site
+20. The admin site should have a page for CRUD operations for products
+21. The admin site should have a page for CRUD operations for categories
+22. The admin site should have a page to manage the sales orders
+23. Need seed commands / scrips in the server side for the following:
+    - Adding two default coupons to the DB: `SUPERHIT`: Flat 150 off, and `FIRSTTIME` 10 percent off.
+    - Adding the default admin user into the system
+    - Adding 5 dummy products to the system with 3 categories
 
 **Out of scope (v1):**
 1. `Printing Services` page
 2. Navbar links for `Printing Services` drop down
+3. Payment gateway integration
 
 **External integrations:**
 No

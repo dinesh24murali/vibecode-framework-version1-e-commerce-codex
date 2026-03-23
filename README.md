@@ -12,7 +12,7 @@ git clone <this-repo> my-project
 cd my-project
 
 # 2. Find-and-replace all placeholders
-#    e-commerce-site, Go, NextJS 16, etc.
+#    e-commerce-site, Go, NextJS 16 Static Site Generation, etc.
 #    See AGENTS.md §6 for the full placeholder list
 
 # 3. Scaffold directories

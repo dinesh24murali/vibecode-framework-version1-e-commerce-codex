@@ -10,7 +10,7 @@
 - **Project name:** `e-commerce-site`
 - **Description:** `This is a simple e-commerce-site for selling books`
 - **Backend:** `Go 1.26` / `Gin Web Framework`
-- **Frontend:** `NextJS 16`
+- **Frontend:** `NextJS 16 Static Site Generation`
 - **Database:** `Postgres`
 - **Deployment target:** `AWS`
 
@@ -122,7 +122,7 @@ Each folder has its own `AGENTS.md` with folder-specific instructions.
 - `tests/AGENTS.md` — coverage gates and test conventions
 - `verify/AGENTS.md` — verification protocol
 - `backend/AGENTS.md` — backend conventions (`Go 1.26`)
-- `frontend/AGENTS.md` — frontend conventions (`NextJS 16`)
+- `frontend/AGENTS.md` — frontend conventions (`NextJS 16 Static Site Generation`)
 
 ---
 
@@ -136,7 +136,7 @@ When you clone this framework, find-and-replace these tokens:
 | `This is a simple e-commerce-site for selling books` | One-sentence description |
 | `Go 1.26` | e.g. `Go 1.26`, `Python`, `Node.js` |
 | `Gin Web Framework` | e.g. `Gin`, `FastAPI`, `Express` |
-| `NextJS 16` | e.g. `React`, `Vue`, `SvelteKit` |
+| `NextJS 16 Static Site Generation` | e.g. `React`, `Vue`, `SvelteKit` |
 | `Postgres` | e.g. `PostgreSQL`, `SQLite`, `MongoDB` |
 | `AWS` | e.g. `AWS`, `GCP`, `Fly.io`, `Vercel` |
 | `Feather Tech` | Your team or company name |

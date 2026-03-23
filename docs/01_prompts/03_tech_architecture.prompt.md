@@ -14,7 +14,7 @@ You are a principal engineer. Generate a **production-ready technical architectu
 
 **Project name:** e-commerce-site
 **Backend lang / framework:** Go 1.26 / Gin Web Framework
-**Frontend:** NextJS 16
+**Frontend:** NextJS 16 Static Site Generation
 **Database:** Postgres
 **Deployment target:** AWS
 **Auth strategy:** JWT
