@@ -150,7 +150,7 @@ dev
 ## 7. Scale & Non-Functional Requirements
 
 **7.1 Expected users at launch:**
-1000
+100
 
 **7.2 Expected peak requests/second:**
 10

@@ -14,14 +14,14 @@ You are a principal engineer. Generate a **production-ready technical architectu
 
 **Project name:** e-commerce-site
 **Backend lang / framework:** Go 1.26 / Gin Web Framework
-**Frontend:** NextJS 16 Static Site Generation
+**Frontend:** NextJS 16 - Static Site Generation
 **Database:** Postgres
 **Deployment target:** AWS
 **Auth strategy:** JWT
-**Scale:** [[Fill from intake 7.1–7.2]]
-**Compliance:** [[Fill from intake 7.4]]
-**Containerized:** [[Fill from intake 6.2]]
-**CI/CD:** [[Fill from intake 6.3]]
+**Scale:** 100
+**Compliance:** DPDPA - Digital Personal Data Protection Act, India
+**Containerized:** Docker Compose
+**CI/CD:** None
 
 ---
 
@@ -55,5 +55,5 @@ You are a principal engineer. Generate a **production-ready technical architectu
 
 - Use Markdown
 - Use Mermaid for all diagrams
-- Be specific with versions (e.g. "PostgreSQL 16", "React 18.3")
+- Be specific with versions (e.g. "PostgreSQL 18", "React 19")
 - Target length: 2500–5000 words
