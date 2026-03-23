@@ -43,7 +43,7 @@ The PRD must be structured for an engineering team to begin implementation immed
 7. There should be a terms and conditions page
 8. There should be a privacy policy page
 9. A cart page is required
-10. The footer should have the following links: Library, Terms and conditions, About us, Wall of fame links. It will also have links to social media handles for Facebook, instagram, and WhatsApp
+10. The footer should have the following links: Terms and conditions, About us, Wall of fame links. It will also have links to social media handles for Facebook, instagram, and WhatsApp
 11. We need sign up by email & password and facebook login. During sign up we need to verify the email by OTP, and then ask for the password
 12. The accounts page will have 3 tabs:
     - My profile: will have first name, last name, phone number, email, and password. The user needs to verify his OTP again if we changes his email

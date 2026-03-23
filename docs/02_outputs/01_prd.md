@@ -104,7 +104,7 @@ Pain points:
 - FR-003: Hovering or tapping `Book Store` shall reveal all supported product categories: Colouring Books, Drawing Books, Journals, Calendars, Sketch Pads, Planners, Stained Art, Fabrii Art, Note Book, Sticker Book, Sticker Colouring Book, and Activity Cards.
 - FR-004: Selecting a category from the `Book Store` menu shall route the user to the product listing page with the chosen category applied as a URL query parameter.
 - FR-005: The navbar shall include a search input on the top right and submit users to the product listing page with the search term preserved in the URL.
-- FR-006: The footer shall appear on all public pages and include links for `Library`, `Terms and conditions`, `About us`, and `Wall of fame`, plus Facebook, Instagram, and WhatsApp social links.
+- FR-006: The footer shall appear on all public pages and include links for `Terms and conditions`, `About us`, and `Wall of fame`, plus Facebook, Instagram, and WhatsApp social links.
 
 ### Product Catalog
 

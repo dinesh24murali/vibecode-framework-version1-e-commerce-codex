@@ -22,7 +22,6 @@
 - Whether the product should support guest checkout or require authentication before checkout.
 - Whether Indian GST is the expected tax regime, inferred from GST Number and Pincode fields.
 - Whether the admin site is part of the same frontend deployment or a separate NextJS route group.
-- Whether `Library` in the footer is intended to link to the storefront or a separate informational page.
 
 ## What Will Be Skipped
 

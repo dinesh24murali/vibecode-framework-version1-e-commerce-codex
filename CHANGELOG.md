@@ -11,6 +11,7 @@ Format: `- [YYYY-MM-DD] <task-name>: <one-line summary>`
 
 <!-- AI: add entries here as tasks are completed -->
 - [2026-03-23] 001-generate-prd: docs: added the v1 product requirements document and product scope memory
+- [2026-03-23] 002-generate-functional-spec: docs: added the functional specification and updated resolved product rules
 
 ---
 
