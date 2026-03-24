@@ -1,0 +1,3960 @@
+openapi: "3.1.0"
+info:
+  title: e-commerce-site API
+  description: REST API for e-commerce-site — a book-selling platform. Backend is Go 1.26 / Gin with Postgres.
+  version: "1.0.0"
+  contact:
+    name: Feather Tech
+servers:
+  - url: http://localhost:8080
+    description: Local development
+  - url: https://staging-api.example.com
+    description: Staging
+  - url: https://api.example.com
+    description: Production
+
+tags:
+  - name: auth
+    description: Customer authentication and token management
+  - name: landing
+    description: Public landing page data
+  - name: products
+    description: Public product catalog
+  - name: categories
+    description: Public category listing
+  - name: cart
+    description: Customer shopping cart (protected)
+  - name: checkout
+    description: Checkout flow — calculate, coupon, place order (protected)
+  - name: orders
+    description: Customer order history and management (protected)
+  - name: account
+    description: Customer profile and address management (protected)
+  - name: contact
+    description: Public contact / enquiry form
+  - name: admin-auth
+    description: Admin authentication
+  - name: admin-products
+    description: Admin product management (admin role)
+  - name: admin-categories
+    description: Admin category management (admin role)
+  - name: admin-orders
+    description: Admin order management (admin role)
+  - name: admin-attributes
+    description: Admin attribute definition and value management (admin role)
+
+security: []
+
+paths:
+
+  # ---------------------------------------------------------------------------
+  # Auth
+  # ---------------------------------------------------------------------------
+
+  /api/v1/auth/register/init:
+    post:
+      tags: [auth]
+      operationId: registerInit
+      summary: Send OTP to email to begin registration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterInitRequest"
+      responses:
+        "200":
+          description: OTP sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/v1/auth/register/verify-otp:
+    post:
+      tags: [auth]
+      operationId: registerVerifyOTP
+      summary: Verify OTP and receive a short-lived otp_token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyOTPRequest"
+      responses:
+        "200":
+          description: OTP verified; otp_token returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OTPTokenResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/v1/auth/register/complete:
+    post:
+      tags: [auth]
+      operationId: registerComplete
+      summary: Complete registration — set first_name, last_name, password using otp_token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterCompleteRequest"
+      responses:
+        "201":
+          description: Account created; auth tokens returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthTokenResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/v1/auth/login:
+    post:
+      tags: [auth]
+      operationId: login
+      summary: Email and password login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthTokenResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/v1/auth/login/facebook:
+    post:
+      tags: [auth]
+      operationId: loginFacebook
+      summary: Facebook OAuth login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FacebookLoginRequest"
+      responses:
+        "200":
+          description: Facebook login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthTokenResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/v1/auth/refresh:
+    post:
+      tags: [auth]
+      operationId: refreshToken
+      summary: Refresh access token using a valid refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshTokenRequest"
+      responses:
+        "200":
+          description: New token pair returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthTokenResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/v1/auth/logout:
+    post:
+      tags: [auth]
+      operationId: logout
+      summary: Invalidate the current refresh token (protected)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshTokenRequest"
+      responses:
+        "200":
+          description: Logged out successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  # ---------------------------------------------------------------------------
+  # Landing
+  # ---------------------------------------------------------------------------
+
+  /api/v1/landing:
+    get:
+      tags: [landing]
+      operationId: getLandingPage
+      summary: Returns carousel slides and featured products (public)
+      responses:
+        "200":
+          description: Landing page data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LandingPageResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  # ---------------------------------------------------------------------------
+  # Products
+  # ---------------------------------------------------------------------------
+
+  /api/v1/products:
+    get:
+      tags: [products]
+      operationId: listProducts
+      summary: Paginated, filterable public product catalog
+      parameters:
+        - $ref: "#/components/parameters/QuerySearch"
+        - $ref: "#/components/parameters/QueryCategory"
+        - $ref: "#/components/parameters/QueryAttributeValueIds"
+        - $ref: "#/components/parameters/QuerySortBy"
+        - $ref: "#/components/parameters/QueryPage"
+        - $ref: "#/components/parameters/QueryLimit"
+      responses:
+        "200":
+          description: Paginated product list with filters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductListResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/v1/products/{id}:
+    get:
+      tags: [products]
+      operationId: getProduct
+      summary: Single product detail (public)
+      parameters:
+        - $ref: "#/components/parameters/PathId"
+      responses:
+        "200":
+          description: Product detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  # ---------------------------------------------------------------------------
+  # Categories
+  # ---------------------------------------------------------------------------
+
+  /api/v1/categories:
+    get:
+      tags: [categories]
+      operationId: listCategories
+      summary: List all categories (public)
+      responses:
+        "200":
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    description: Array of category objects
+                    items:
+                      $ref: "#/components/schemas/Category"
+                required: [data]
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/v1/categories/{id}:
+    get:
+      tags: [categories]
+      operationId: getCategory
+      summary: Single category (public)
+      parameters:
+        - $ref: "#/components/parameters/PathId"
+      responses:
+        "200":
+          description: Category detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  # ---------------------------------------------------------------------------
+  # Cart
+  # ---------------------------------------------------------------------------
+
+  /api/v1/cart:
+    get:
+      tags: [cart]
+      operationId: getCart
+      summary: Get the current customer's cart
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Cart contents
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      tags: [cart]
+      operationId: clearCart
+      summary: Clear all items from the cart
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Cart cleared
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/v1/cart/items:
+    post:
+      tags: [cart]
+      operationId: addCartItem
+      summary: Add a product to the cart
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddToCartRequest"
+      responses:
+        "201":
+          description: Item added to cart
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/v1/cart/items/{itemId}:
+    put:
+      tags: [cart]
+      operationId: updateCartItem
+      summary: Update quantity of a cart item
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PathItemId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCartItemRequest"
+      responses:
+        "200":
+          description: Cart item updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      tags: [cart]
+      operationId: removeCartItem
+      summary: Remove a specific item from the cart
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PathItemId"
+      responses:
+        "200":
+          description: Item removed from cart
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  # ---------------------------------------------------------------------------
+  # Checkout
+  # ---------------------------------------------------------------------------
+
+  /api/v1/checkout/calculate:
+    post:
+      tags: [checkout]
+      operationId: calculateCheckout
+      summary: Calculate totals with optional coupon code; returns CheckoutSummary
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CalculateCheckoutRequest"
+      responses:
+        "200":
+          description: Checkout summary with totals
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutSummary"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/v1/checkout/coupons/validate:
+    post:
+      tags: [checkout]
+      operationId: validateCoupon
+      summary: Validate a coupon code without placing an order
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplyCouponRequest"
+      responses:
+        "200":
+          description: Coupon validation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CouponValidationResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/v1/checkout/orders:
+    post:
+      tags: [checkout]
+      operationId: placeOrder
+      summary: Place an order from the current cart
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlaceOrderRequest"
+      responses:
+        "201":
+          description: Order placed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  # ---------------------------------------------------------------------------
+  # Orders
+  # ---------------------------------------------------------------------------
+
+  /api/v1/orders:
+    get:
+      tags: [orders]
+      operationId: listOrders
+      summary: Paginated order history for the current customer
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/QueryPage"
+        - $ref: "#/components/parameters/QueryLimit"
+        - name: status
+          in: query
+          required: false
+          description: Filter orders by status
+          schema:
+            type: string
+            enum: [open, fulfilled, cancelled]
+            description: Order status filter
+      responses:
+        "200":
+          description: Paginated list of orders
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderListResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/v1/orders/{id}:
+    get:
+      tags: [orders]
+      operationId: getOrder
+      summary: Get a single order by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PathId"
+      responses:
+        "200":
+          description: Order detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/v1/orders/{id}/cancel:
+    put:
+      tags: [orders]
+      operationId: cancelOrder
+      summary: Cancel an open order
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PathId"
+      responses:
+        "200":
+          description: Order cancelled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  # ---------------------------------------------------------------------------
+  # Account — Profile
+  # ---------------------------------------------------------------------------
+
+  /api/v1/account/profile:
+    get:
+      tags: [account]
+      operationId: getProfile
+      summary: Get the current customer's profile
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Customer profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    put:
+      tags: [account]
+      operationId: updateProfile
+      summary: Update first_name and last_name
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProfileRequest"
+      responses:
+        "200":
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/v1/account/profile/password:
+    put:
+      tags: [account]
+      operationId: changePassword
+      summary: Change account password
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePasswordRequest"
+      responses:
+        "200":
+          description: Password changed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/v1/account/profile/email-change/request:
+    post:
+      tags: [account]
+      operationId: requestEmailChange
+      summary: Send OTP to the new email address to initiate email change
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequestEmailChangeRequest"
+      responses:
+        "200":
+          description: OTP sent to new email
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/v1/account/profile/email-change/confirm:
+    post:
+      tags: [account]
+      operationId: confirmEmailChange
+      summary: Verify OTP and update the account email address
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConfirmEmailChangeRequest"
+      responses:
+        "200":
+          description: Email updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  # ---------------------------------------------------------------------------
+  # Account — Addresses
+  # ---------------------------------------------------------------------------
+
+  /api/v1/account/addresses:
+    get:
+      tags: [account]
+      operationId: listAddresses
+      summary: List all saved addresses for the current customer
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of addresses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    description: Array of address objects
+                    items:
+                      $ref: "#/components/schemas/Address"
+                required: [data]
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      tags: [account]
+      operationId: createAddress
+      summary: Add a new address
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAddressRequest"
+      responses:
+        "201":
+          description: Address created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Address"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/v1/account/addresses/{id}:
+    put:
+      tags: [account]
+      operationId: updateAddress
+      summary: Update an existing address
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PathId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAddressRequest"
+      responses:
+        "200":
+          description: Address updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Address"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      tags: [account]
+      operationId: deleteAddress
+      summary: Delete an address
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PathId"
+      responses:
+        "200":
+          description: Address deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  # ---------------------------------------------------------------------------
+  # Contact
+  # ---------------------------------------------------------------------------
+
+  /api/v1/contact:
+    post:
+      tags: [contact]
+      operationId: submitContact
+      summary: Submit a contact / enquiry form (public)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContactQueryRequest"
+      responses:
+        "200":
+          description: Enquiry received
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  # ---------------------------------------------------------------------------
+  # Admin Auth
+  # ---------------------------------------------------------------------------
+
+  /api/v1/admin/auth/login:
+    post:
+      tags: [admin-auth]
+      operationId: adminLogin
+      summary: Admin email and password login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Admin login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthTokenResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  # ---------------------------------------------------------------------------
+  # Admin Products
+  # ---------------------------------------------------------------------------
+
+  /api/v1/admin/products:
+    get:
+      tags: [admin-products]
+      operationId: adminListProducts
+      summary: Paginated list of all products with all fields (admin)
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/QuerySearch"
+        - $ref: "#/components/parameters/QueryPage"
+        - $ref: "#/components/parameters/QueryLimit"
+      responses:
+        "200":
+          description: Paginated product list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    description: Array of full product objects
+                    items:
+                      $ref: "#/components/schemas/Product"
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
+                required: [data, meta]
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      tags: [admin-products]
+      operationId: adminCreateProduct
+      summary: Create a new product (admin)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProductRequest"
+      responses:
+        "201":
+          description: Product created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/v1/admin/products/{id}:
+    get:
+      tags: [admin-products]
+      operationId: adminGetProduct
+      summary: Get a single product by ID (admin)
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PathId"
+      responses:
+        "200":
+          description: Product detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    put:
+      tags: [admin-products]
+      operationId: adminUpdateProduct
+      summary: Update a product (admin)
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PathId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProductRequest"
+      responses:
+        "200":
+          description: Product updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      tags: [admin-products]
+      operationId: adminDeleteProduct
+      summary: Delete a product (admin)
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PathId"
+      responses:
+        "200":
+          description: Product deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  # ---------------------------------------------------------------------------
+  # Admin Product Attributes
+  # ---------------------------------------------------------------------------
+
+  /api/v1/admin/products/{id}/attributes:
+    get:
+      tags: [admin-products]
+      operationId: adminListProductAttributes
+      summary: List all attributes for a product (admin)
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PathId"
+      responses:
+        "200":
+          description: List of product attributes
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Product attributes list response
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    description: Array of product attributes
+                    items:
+                      $ref: "#/components/schemas/ProductAttribute"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      tags: [admin-products]
+      operationId: adminAssignProductAttribute
+      summary: Assign a pre-defined attribute value to a product (admin)
+      description: |
+        Creates a PRODUCT_ATTRIBUTE_ASSIGNMENTS row linking the product to an existing
+        PRODUCT_ATTRIBUTE_VALUES entry. The attribute value must already exist — create it
+        first via POST /api/v1/admin/attributes/{attrDefId}/values.
+        To change an assigned value, DELETE the old assignment and POST the new one.
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PathId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssignProductAttributeRequest"
+      responses:
+        "201":
+          description: Attribute assigned to product
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductAttribute"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/v1/admin/products/{id}/attributes/{attrId}:
+    delete:
+      tags: [admin-products]
+      operationId: adminRemoveProductAttribute
+      summary: Remove an attribute value assignment from a product (admin)
+      description: |
+        Deletes the PRODUCT_ATTRIBUTE_ASSIGNMENTS row for this product + attribute_value_id pair.
+        `attrId` is the `attribute_value_id` (PRODUCT_ATTRIBUTE_VALUES.id) of the assigned value
+        as returned in ProductAttribute.attribute_value_id.
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PathId"
+        - $ref: "#/components/parameters/PathAttrId"
+      responses:
+        "204":
+          description: Attribute deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  # ---------------------------------------------------------------------------
+  # Admin Categories
+  # ---------------------------------------------------------------------------
+
+  /api/v1/admin/categories:
+    get:
+      tags: [admin-categories]
+      operationId: adminListCategories
+      summary: List all categories (admin)
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/QueryPage"
+        - $ref: "#/components/parameters/QueryLimit"
+      responses:
+        "200":
+          description: Paginated category list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    description: Array of category objects
+                    items:
+                      $ref: "#/components/schemas/Category"
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
+                required: [data, meta]
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      tags: [admin-categories]
+      operationId: adminCreateCategory
+      summary: Create a new category (admin)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCategoryRequest"
+      responses:
+        "201":
+          description: Category created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/v1/admin/categories/{id}:
+    get:
+      tags: [admin-categories]
+      operationId: adminGetCategory
+      summary: Get a single category by ID (admin)
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PathId"
+      responses:
+        "200":
+          description: Category detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    put:
+      tags: [admin-categories]
+      operationId: adminUpdateCategory
+      summary: Update a category (admin)
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PathId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCategoryRequest"
+      responses:
+        "200":
+          description: Category updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      tags: [admin-categories]
+      operationId: adminDeleteCategory
+      summary: Delete a category (admin)
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PathId"
+      responses:
+        "200":
+          description: Category deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  # ---------------------------------------------------------------------------
+  # Admin Orders
+  # ---------------------------------------------------------------------------
+
+  /api/v1/admin/orders:
+    get:
+      tags: [admin-orders]
+      operationId: adminListOrders
+      summary: Paginated list of all orders; filterable by status (admin)
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/QueryPage"
+        - $ref: "#/components/parameters/QueryLimit"
+        - name: status
+          in: query
+          required: false
+          description: Filter by order status
+          schema:
+            type: string
+            enum: [open, fulfilled, cancelled]
+            description: Order status to filter on
+      responses:
+        "200":
+          description: Paginated order list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderListResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/v1/admin/orders/{id}:
+    get:
+      tags: [admin-orders]
+      operationId: adminGetOrder
+      summary: Get a single order by ID (admin)
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PathId"
+      responses:
+        "200":
+          description: Order detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/v1/admin/orders/{id}/status:
+    put:
+      tags: [admin-orders]
+      operationId: adminUpdateOrderStatus
+      summary: Update order status to open, fulfilled, or cancelled (admin)
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PathId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateOrderStatusRequest"
+      responses:
+        "200":
+          description: Order status updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  # ---------------------------------------------------------------------------
+  # Admin Attributes (Dimension Definitions + Values)
+  # ---------------------------------------------------------------------------
+
+  /api/v1/admin/attributes:
+    get:
+      tags: [admin-attributes]
+      operationId: adminListAttributeDefinitions
+      summary: List all attribute dimension definitions (admin)
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/QueryPage"
+        - $ref: "#/components/parameters/QueryLimit"
+      responses:
+        "200":
+          description: Paginated list of attribute definitions
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Paginated attribute definitions response
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    description: Array of attribute definitions
+                    items:
+                      $ref: "#/components/schemas/AttributeDefinition"
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      tags: [admin-attributes]
+      operationId: adminCreateAttributeDefinition
+      summary: Create a new attribute dimension (admin)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAttributeDefinitionRequest"
+      responses:
+        "201":
+          description: Attribute definition created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttributeDefinition"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/v1/admin/attributes/{attrDefId}:
+    get:
+      tags: [admin-attributes]
+      operationId: adminGetAttributeDefinition
+      summary: Get a single attribute dimension (admin)
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PathAttrDefId"
+      responses:
+        "200":
+          description: Attribute definition
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttributeDefinition"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    put:
+      tags: [admin-attributes]
+      operationId: adminUpdateAttributeDefinition
+      summary: Update an attribute dimension (admin)
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PathAttrDefId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAttributeDefinitionRequest"
+      responses:
+        "200":
+          description: Attribute definition updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttributeDefinition"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      tags: [admin-attributes]
+      operationId: adminDeleteAttributeDefinition
+      summary: Delete an attribute dimension (admin)
+      description: Cascades to all associated PRODUCT_ATTRIBUTE_VALUES and PRODUCT_ATTRIBUTE_ASSIGNMENTS rows.
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PathAttrDefId"
+      responses:
+        "204":
+          description: Attribute definition deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/v1/admin/attributes/{attrDefId}/values:
+    get:
+      tags: [admin-attributes]
+      operationId: adminListAttributeValues
+      summary: List all allowed values for an attribute dimension (admin)
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PathAttrDefId"
+      responses:
+        "200":
+          description: List of attribute values
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Attribute values list response
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    description: Array of attribute values ordered by sort_order
+                    items:
+                      $ref: "#/components/schemas/AttributeDefinitionValue"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      tags: [admin-attributes]
+      operationId: adminCreateAttributeValue
+      summary: Add an allowed value to an attribute dimension (admin)
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PathAttrDefId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAttributeDefinitionValueRequest"
+      responses:
+        "201":
+          description: Attribute value created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttributeDefinitionValue"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/v1/admin/attributes/{attrDefId}/values/{valueId}:
+    put:
+      tags: [admin-attributes]
+      operationId: adminUpdateAttributeValue
+      summary: Update an allowed value of an attribute dimension (admin)
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PathAttrDefId"
+        - $ref: "#/components/parameters/PathAttrValId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAttributeDefinitionValueRequest"
+      responses:
+        "200":
+          description: Attribute value updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttributeDefinitionValue"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      tags: [admin-attributes]
+      operationId: adminDeleteAttributeValue
+      summary: Delete an allowed value from an attribute dimension (admin)
+      description: Also removes all PRODUCT_ATTRIBUTE_ASSIGNMENTS that reference this value.
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PathAttrDefId"
+        - $ref: "#/components/parameters/PathAttrValId"
+      responses:
+        "204":
+          description: Attribute value deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+# =============================================================================
+# Components
+# =============================================================================
+
+components:
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT access token obtained from /api/v1/auth/login or /api/v1/auth/refresh
+
+  # ---------------------------------------------------------------------------
+  # Parameters
+  # ---------------------------------------------------------------------------
+
+  parameters:
+
+    PathId:
+      name: id
+      in: path
+      required: true
+      description: UUID identifier of the resource
+      schema:
+        type: string
+        format: uuid
+        description: UUID of the resource
+      example: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+
+    PathAttrId:
+      name: attrId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        description: UUID of the product attribute value assignment
+      description: Attribute value UUID used as the assignment identifier
+      example: "fa0e8400-e29b-41d4-a716-446655440010"
+
+    PathAttrDefId:
+      name: attrDefId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        description: UUID of the attribute definition (PRODUCT_ATTRIBUTES row)
+      description: Attribute definition UUID
+      example: "da0e8400-e29b-41d4-a716-446655440020"
+
+    PathAttrValId:
+      name: valueId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        description: UUID of the attribute value (PRODUCT_ATTRIBUTE_VALUES row)
+      description: Attribute value UUID
+      example: "db0e8400-e29b-41d4-a716-446655440021"
+
+    PathItemId:
+      name: itemId
+      in: path
+      required: true
+      description: UUID identifier of the cart item
+      schema:
+        type: string
+        format: uuid
+        description: UUID of the cart item
+      example: "7b4e2a11-9c83-4f6d-a512-1d8e3b7c0a55"
+
+    QueryPage:
+      name: page
+      in: query
+      required: false
+      description: Page number for pagination (1-based)
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+        description: Page number, starting from 1
+      example: 1
+
+    QueryLimit:
+      name: limit
+      in: query
+      required: false
+      description: Number of items per page
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+        description: Items per page; max 100
+      example: 20
+
+    QuerySearch:
+      name: q
+      in: query
+      required: false
+      description: Full-text search query string
+      schema:
+        type: string
+        description: Search term to filter results
+      example: "watercolour journal"
+
+    QueryCategory:
+      name: "category[]"
+      in: query
+      required: false
+      description: Filter by one or more category slugs
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+            - colouring-books
+            - drawing-books
+            - journals
+            - calendars
+            - sketch-pads
+            - planners
+            - stained-art
+            - fabrii-art
+            - note-book
+            - sticker-book
+            - sticker-colouring-book
+            - activity-cards
+          description: Category slug
+      style: form
+      explode: true
+      example: ["journals", "sketch-pads"]
+
+    QueryAttributeValueIds:
+      name: "attr_value_id[]"
+      in: query
+      required: false
+      description: |
+        Filter products by one or more pre-defined attribute values.
+        Each value is the UUID of a PRODUCT_ATTRIBUTE_VALUES row, available as
+        AttributeFilterGroup.values[].id in the ProductFilters response.
+        Multiple UUIDs for the same attribute dimension are OR-combined;
+        UUIDs across different dimensions are AND-combined.
+        Example: ?attr_value_id[]=<level-beginner-uuid>&attr_value_id[]=<theme-mandala-uuid>
+      schema:
+        type: array
+        items:
+          type: string
+          format: uuid
+          description: attribute_value_id UUID from PRODUCT_ATTRIBUTE_VALUES
+      style: form
+      explode: true
+      example: ["db0e8400-e29b-41d4-a716-446655440021", "dc0e8400-e29b-41d4-a716-446655440022"]
+
+    QuerySortBy:
+      name: sort_by
+      in: query
+      required: false
+      description: Sort order for product listing
+      schema:
+        type: string
+        enum: [price_asc, price_desc, newest, popular]
+        default: newest
+        description: Sort field and direction
+      example: "price_asc"
+
+  # ---------------------------------------------------------------------------
+  # Responses
+  # ---------------------------------------------------------------------------
+
+  responses:
+
+    BadRequest:
+      description: Bad request — malformed JSON or invalid query parameters
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            code: 400
+            message: "Bad request"
+            details: null
+
+    Unauthorized:
+      description: Unauthorized — missing or invalid JWT token
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            code: 401
+            message: "Unauthorized"
+            details: null
+
+    Forbidden:
+      description: Forbidden — authenticated but insufficient role (requires admin)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            code: 403
+            message: "Forbidden"
+            details: null
+
+    NotFound:
+      description: Not found — resource does not exist
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            code: 404
+            message: "Resource not found"
+            details: null
+
+    UnprocessableEntity:
+      description: Unprocessable entity — validation errors
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationErrorResponse"
+          example:
+            code: 422
+            message: "Validation failed"
+            errors:
+              - field: "email"
+                message: "must be a valid email address"
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            code: 500
+            message: "Internal server error"
+            details: null
+
+  # ---------------------------------------------------------------------------
+  # Schemas
+  # ---------------------------------------------------------------------------
+
+  schemas:
+
+    # ------------------------------------------------------------------
+    # Generic / Shared
+    # ------------------------------------------------------------------
+
+    PaginationMeta:
+      type: object
+      description: Metadata for paginated responses
+      properties:
+        total:
+          type: integer
+          description: Total number of records matching the query
+        page:
+          type: integer
+          description: Current page number (1-based)
+        limit:
+          type: integer
+          description: Number of items per page
+        total_pages:
+          type: integer
+          description: Total number of pages
+      required: [total, page, limit, total_pages]
+      example:
+        total: 87
+        page: 1
+        limit: 20
+        total_pages: 5
+
+    ErrorResponse:
+      type: object
+      description: Standard error response body
+      properties:
+        code:
+          type: integer
+          description: HTTP status code
+        message:
+          type: string
+          description: Human-readable error message
+        details:
+          type: ["string", "null"]
+          description: Optional additional error details or null
+      required: [code, message]
+      example:
+        code: 404
+        message: "Resource not found"
+        details: null
+
+    ValidationErrorResponse:
+      type: object
+      description: Validation error response containing field-level errors
+      properties:
+        code:
+          type: integer
+          description: HTTP status code (always 422)
+        message:
+          type: string
+          description: Top-level error message
+        errors:
+          type: array
+          description: List of field-level validation errors
+          items:
+            $ref: "#/components/schemas/FieldError"
+      required: [code, message, errors]
+      example:
+        code: 422
+        message: "Validation failed"
+        errors:
+          - field: "email"
+            message: "must be a valid email address"
+          - field: "password"
+            message: "must be at least 8 characters"
+
+    FieldError:
+      type: object
+      description: A single field-level validation error
+      properties:
+        field:
+          type: string
+          description: The name of the field that failed validation
+        message:
+          type: string
+          description: Description of the validation failure
+      required: [field, message]
+      example:
+        field: "email"
+        message: "must be a valid email address"
+
+    MessageResponse:
+      type: object
+      description: Generic success response with a human-readable message
+      properties:
+        message:
+          type: string
+          description: Success or informational message
+      required: [message]
+      example:
+        message: "OTP sent to your email address"
+
+    # ------------------------------------------------------------------
+    # Auth
+    # ------------------------------------------------------------------
+
+    RegisterInitRequest:
+      type: object
+      description: Request body to initiate registration by sending an OTP to the given email
+      properties:
+        email:
+          type: string
+          format: email
+          description: Email address to send the OTP to
+      required: [email]
+      example:
+        email: "alice@example.com"
+
+    VerifyOTPRequest:
+      type: object
+      description: Request body to verify the OTP that was sent to the email
+      properties:
+        email:
+          type: string
+          format: email
+          description: Email address the OTP was sent to
+        otp:
+          type: string
+          description: 6-digit OTP code received by email
+      required: [email, otp]
+      example:
+        email: "alice@example.com"
+        otp: "482910"
+
+    OTPTokenResponse:
+      type: object
+      description: Short-lived token returned after successful OTP verification; used to complete registration
+      properties:
+        otp_token:
+          type: string
+          description: Short-lived JWT used only for the register/complete step
+        expires_in:
+          type: integer
+          description: Number of seconds until the otp_token expires
+      required: [otp_token, expires_in]
+      example:
+        otp_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.otp.sig"
+        expires_in: 600
+
+    RegisterCompleteRequest:
+      type: object
+      description: Request body to complete registration — set name and password using the otp_token
+      properties:
+        otp_token:
+          type: string
+          description: Short-lived token obtained from the verify-otp step
+        first_name:
+          type: string
+          description: Customer's first name
+        last_name:
+          type: string
+          description: Customer's last name
+        password:
+          type: string
+          format: password
+          minLength: 8
+          description: Desired password; minimum 8 characters
+      required: [otp_token, first_name, last_name, password]
+      example:
+        otp_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.otp.sig"
+        first_name: "Alice"
+        last_name: "Smith"
+        password: "Secure@1234"
+
+    LoginRequest:
+      type: object
+      description: Email and password credentials for login
+      properties:
+        email:
+          type: string
+          format: email
+          description: Registered email address
+        password:
+          type: string
+          format: password
+          description: Account password
+      required: [email, password]
+      example:
+        email: "alice@example.com"
+        password: "Secure@1234"
+
+    FacebookLoginRequest:
+      type: object
+      description: Facebook OAuth access token for social login
+      properties:
+        access_token:
+          type: string
+          description: Facebook OAuth access token obtained from the Facebook SDK
+      required: [access_token]
+      example:
+        access_token: "EAABwzLixnjYBAFb..."
+
+    AuthTokenResponse:
+      type: object
+      description: JWT access and refresh token pair returned after successful authentication
+      properties:
+        access_token:
+          type: string
+          description: Short-lived JWT access token (Bearer)
+        refresh_token:
+          type: string
+          description: Long-lived refresh token used to obtain a new access token
+        token_type:
+          type: string
+          description: Token type; always "bearer"
+        expires_in:
+          type: integer
+          description: Number of seconds until the access_token expires
+        user:
+          $ref: "#/components/schemas/UserProfile"
+      required: [access_token, refresh_token, token_type, expires_in, user]
+      example:
+        access_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.access.sig"
+        refresh_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.refresh.sig"
+        token_type: "bearer"
+        expires_in: 900
+        user:
+          id: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          email: "alice@example.com"
+          first_name: "Alice"
+          last_name: "Smith"
+          role: "customer"
+          created_at: "2026-01-15T10:30:00Z"
+          updated_at: "2026-01-15T10:30:00Z"
+
+    RefreshTokenRequest:
+      type: object
+      description: Refresh token to obtain a new access token or to logout
+      properties:
+        refresh_token:
+          type: string
+          description: Valid refresh token previously issued by the server
+      required: [refresh_token]
+      example:
+        refresh_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.refresh.sig"
+
+    # ------------------------------------------------------------------
+    # User / Account
+    # ------------------------------------------------------------------
+
+    UserProfile:
+      type: object
+      description: Customer or admin user profile
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier of the user
+        email:
+          type: string
+          format: email
+          description: User's email address
+        first_name:
+          type: string
+          description: User's first name
+        last_name:
+          type: string
+          description: User's last name
+        role:
+          type: string
+          enum: [customer, admin]
+          description: Role assigned to the user
+        created_at:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp when the account was created
+        updated_at:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp when the account was last updated
+      required: [id, email, first_name, last_name, role, created_at, updated_at]
+      example:
+        id: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+        email: "alice@example.com"
+        first_name: "Alice"
+        last_name: "Smith"
+        role: "customer"
+        created_at: "2026-01-15T10:30:00Z"
+        updated_at: "2026-03-01T08:00:00Z"
+
+    UpdateProfileRequest:
+      type: object
+      description: Request body to update the customer's display name
+      properties:
+        first_name:
+          type: string
+          description: Updated first name
+        last_name:
+          type: string
+          description: Updated last name
+      required: [first_name, last_name]
+      example:
+        first_name: "Alice"
+        last_name: "Johnson"
+
+    ChangePasswordRequest:
+      type: object
+      description: Request body to change the account password
+      properties:
+        current_password:
+          type: string
+          format: password
+          description: The user's current password for verification
+        new_password:
+          type: string
+          format: password
+          minLength: 8
+          description: The desired new password; minimum 8 characters
+        confirm_new_password:
+          type: string
+          format: password
+          description: Must match new_password
+      required: [current_password, new_password, confirm_new_password]
+      example:
+        current_password: "Secure@1234"
+        new_password: "NewSecure@5678"
+        confirm_new_password: "NewSecure@5678"
+
+    RequestEmailChangeRequest:
+      type: object
+      description: Request body to initiate an email address change; sends an OTP to the new email
+      properties:
+        new_email:
+          type: string
+          format: email
+          description: The new email address to change to
+      required: [new_email]
+      example:
+        new_email: "alice.new@example.com"
+
+    ConfirmEmailChangeRequest:
+      type: object
+      description: Request body to confirm the email change by verifying the OTP sent to the new email
+      properties:
+        new_email:
+          type: string
+          format: email
+          description: The new email address the OTP was sent to
+        otp:
+          type: string
+          description: 6-digit OTP received at the new email address
+      required: [new_email, otp]
+      example:
+        new_email: "alice.new@example.com"
+        otp: "719283"
+
+    # ------------------------------------------------------------------
+    # Address
+    # ------------------------------------------------------------------
+
+    Address:
+      type: object
+      description: A saved delivery or billing address belonging to a customer
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier of the address
+        address_line1:
+          type: string
+          description: Primary address line (street, building number)
+        address_line2:
+          type: ["string", "null"]
+          description: Secondary address line (apartment, floor) or null
+        landmark:
+          type: ["string", "null"]
+          description: Nearby landmark or null
+        city:
+          type: string
+          description: City name
+        state:
+          type: string
+          description: State or province name
+        pincode:
+          type: string
+          description: Postal / PIN code
+        company_name:
+          type: ["string", "null"]
+          description: Company name for GST billing or null
+        gst_number:
+          type: ["string", "null"]
+          description: GST registration number or null
+        phone:
+          type: string
+          description: Contact phone number for this address
+        is_default:
+          type: boolean
+          description: Whether this is the customer's default shipping address
+        created_at:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp when the address was created
+        updated_at:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp when the address was last updated
+      required:
+        - id
+        - address_line1
+        - city
+        - state
+        - pincode
+        - phone
+        - is_default
+        - created_at
+        - updated_at
+      example:
+        id: "9e6b8c2d-1f4a-4e7d-b3c5-0a8f2d6e4b9c"
+        address_line1: "42, Rose Garden Street"
+        address_line2: "Flat 3B"
+        landmark: "Near City Mall"
+        city: "Chennai"
+        state: "Tamil Nadu"
+        pincode: "600001"
+        company_name: null
+        gst_number: null
+        phone: "+919876543210"
+        is_default: true
+        created_at: "2026-02-01T12:00:00Z"
+        updated_at: "2026-02-01T12:00:00Z"
+
+    CreateAddressRequest:
+      type: object
+      description: Request body to create a new address
+      properties:
+        address_line1:
+          type: string
+          description: Primary address line
+        address_line2:
+          type: ["string", "null"]
+          description: Secondary address line or null
+        landmark:
+          type: ["string", "null"]
+          description: Nearby landmark or null
+        city:
+          type: string
+          description: City name
+        state:
+          type: string
+          description: State or province name
+        pincode:
+          type: string
+          description: Postal / PIN code
+        company_name:
+          type: ["string", "null"]
+          description: Company name for GST billing or null
+        gst_number:
+          type: ["string", "null"]
+          description: GST registration number or null
+        phone:
+          type: string
+          description: Contact phone number for this address
+        is_default:
+          type: boolean
+          description: Set as the default shipping address
+      required: [address_line1, city, state, pincode, phone, is_default]
+      example:
+        address_line1: "42, Rose Garden Street"
+        address_line2: "Flat 3B"
+        landmark: "Near City Mall"
+        city: "Chennai"
+        state: "Tamil Nadu"
+        pincode: "600001"
+        company_name: null
+        gst_number: null
+        phone: "+919876543210"
+        is_default: true
+
+    UpdateAddressRequest:
+      type: object
+      description: Request body to update an address; all fields are optional
+      properties:
+        address_line1:
+          type: string
+          description: Primary address line
+        address_line2:
+          type: ["string", "null"]
+          description: Secondary address line or null
+        landmark:
+          type: ["string", "null"]
+          description: Nearby landmark or null
+        city:
+          type: string
+          description: City name
+        state:
+          type: string
+          description: State or province name
+        pincode:
+          type: string
+          description: Postal / PIN code
+        company_name:
+          type: ["string", "null"]
+          description: Company name for GST billing or null
+        gst_number:
+          type: ["string", "null"]
+          description: GST registration number or null
+        phone:
+          type: string
+          description: Contact phone number for this address
+        is_default:
+          type: boolean
+          description: Set as the default shipping address
+      example:
+        city: "Bengaluru"
+        state: "Karnataka"
+        pincode: "560001"
+        is_default: false
+
+    # ------------------------------------------------------------------
+    # Category
+    # ------------------------------------------------------------------
+
+    Category:
+      type: object
+      description: A product category
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier of the category
+        name:
+          type: string
+          description: Display name of the category
+        slug:
+          type: string
+          description: URL-safe identifier used in filters
+          enum:
+            - colouring-books
+            - drawing-books
+            - journals
+            - calendars
+            - sketch-pads
+            - planners
+            - stained-art
+            - fabrii-art
+            - note-book
+            - sticker-book
+            - sticker-colouring-book
+            - activity-cards
+        description:
+          type: ["string", "null"]
+          description: Optional description of the category or null
+        image_url:
+          type: ["string", "null"]
+          description: URL to the category cover image or null
+        created_at:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp when the category was created
+        updated_at:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp when the category was last updated
+      required: [id, name, slug, created_at, updated_at]
+      example:
+        id: "c1a2b3d4-e5f6-7890-ab12-cd34ef567890"
+        name: "Journals"
+        slug: "journals"
+        description: "Beautifully crafted handmade journals"
+        image_url: "https://cdn.example.com/categories/journals.jpg"
+        created_at: "2026-01-01T00:00:00Z"
+        updated_at: "2026-01-01T00:00:00Z"
+
+    CreateCategoryRequest:
+      type: object
+      description: Request body to create a new category
+      properties:
+        name:
+          type: string
+          description: Display name of the category
+        slug:
+          type: string
+          description: URL-safe unique slug
+        description:
+          type: ["string", "null"]
+          description: Optional description or null
+        image_url:
+          type: ["string", "null"]
+          description: URL to the category cover image or null
+      required: [name, slug]
+      example:
+        name: "Journals"
+        slug: "journals"
+        description: "Beautifully crafted handmade journals"
+        image_url: "https://cdn.example.com/categories/journals.jpg"
+
+    UpdateCategoryRequest:
+      type: object
+      description: Request body to update a category; all fields are optional
+      properties:
+        name:
+          type: string
+          description: Updated display name
+        slug:
+          type: string
+          description: Updated URL-safe slug
+        description:
+          type: ["string", "null"]
+          description: Updated description or null
+        image_url:
+          type: ["string", "null"]
+          description: Updated image URL or null
+      example:
+        name: "Hand-crafted Journals"
+        description: "Premium quality handmade journals for everyday writing"
+
+    # ------------------------------------------------------------------
+    # Product
+    # ------------------------------------------------------------------
+
+    ProductImage:
+      type: object
+      description: An image associated with a product
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier of the product image
+        url:
+          type: string
+          format: uri
+          description: Full URL of the image
+        alt_text:
+          type: ["string", "null"]
+          description: Alt text for the image or null
+        sort_order:
+          type: integer
+          description: Display order; lower numbers appear first
+      required: [id, url, sort_order]
+      example:
+        id: "f1e2d3c4-b5a6-7890-1234-56789abcdef0"
+        url: "https://cdn.example.com/products/mandala-journal-front.jpg"
+        alt_text: "Mandala journal — front cover"
+        sort_order: 1
+
+    Product:
+      type: object
+      description: Full product object with all fields
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier of the product
+        name:
+          type: string
+          description: Display name of the product
+        slug:
+          type: string
+          description: URL-safe unique identifier
+        description:
+          type: string
+          description: Full product description (may contain HTML)
+        price:
+          type: number
+          format: float
+          description: Base price in Indian Rupees (INR)
+        discount_percent:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+          description: Discount percentage applied to the base price (0 means no discount)
+        discounted_price:
+          type: number
+          format: float
+          description: Computed price after applying discount_percent to price
+        stock:
+          type: integer
+          minimum: 0
+          description: Available stock quantity
+        attributes:
+          type: array
+          description: Dynamic key-value attributes for the product (e.g. level, theme, size). Managed via /admin/products/{id}/attributes
+          items:
+            $ref: "#/components/schemas/ProductAttribute"
+        images:
+          type: array
+          description: Ordered list of product images
+          items:
+            $ref: "#/components/schemas/ProductImage"
+        categories:
+          type: array
+          description: Categories this product belongs to
+          items:
+            $ref: "#/components/schemas/Category"
+        is_active:
+          type: boolean
+          description: Whether the product is publicly visible
+        created_at:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp when the product was created
+        updated_at:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp when the product was last updated
+      required:
+        - id
+        - name
+        - slug
+        - description
+        - price
+        - discount_percent
+        - discounted_price
+        - stock
+        - attributes
+        - images
+        - categories
+        - is_active
+        - created_at
+        - updated_at
+      example:
+        id: "a1b2c3d4-e5f6-7890-ab12-cd34ef567890"
+        name: "Mandala Colouring Journal A5"
+        slug: "mandala-colouring-journal-a5"
+        description: "A beautifully crafted A5 journal with 120 mandala colouring pages."
+        price: 499.00
+        discount_percent: 10.0
+        discounted_price: 449.10
+        stock: 150
+        attributes:
+          - attribute_value_id: "db0e8400-e29b-41d4-a716-446655440021"
+            attribute_id: "da0e8400-e29b-41d4-a716-446655440020"
+            code: "level"
+            attribute_name: "Skill Level"
+            value: "Beginner"
+            value_slug: "beginner"
+            is_filterable: true
+          - attribute_value_id: "dc0e8400-e29b-41d4-a716-446655440022"
+            attribute_id: "dd0e8400-e29b-41d4-a716-446655440023"
+            code: "theme"
+            attribute_name: "Theme"
+            value: "Mandala"
+            value_slug: "mandala"
+            is_filterable: true
+          - attribute_value_id: "de0e8400-e29b-41d4-a716-446655440024"
+            attribute_id: "df0e8400-e29b-41d4-a716-446655440025"
+            code: "size"
+            attribute_name: "Size"
+            value: "A5"
+            value_slug: "a5"
+            is_filterable: true
+        images:
+          - id: "f1e2d3c4-b5a6-7890-1234-56789abcdef0"
+            url: "https://cdn.example.com/products/mandala-journal-front.jpg"
+            alt_text: "Front cover"
+            sort_order: 1
+        categories:
+          - id: "c1a2b3d4-e5f6-7890-ab12-cd34ef567890"
+            name: "Journals"
+            slug: "journals"
+            description: null
+            image_url: null
+            created_at: "2026-01-01T00:00:00Z"
+            updated_at: "2026-01-01T00:00:00Z"
+        is_active: true
+        created_at: "2026-01-10T09:00:00Z"
+        updated_at: "2026-03-01T11:00:00Z"
+
+    ProductSummary:
+      type: object
+      description: Abbreviated product representation used in list and landing page responses
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier of the product
+        name:
+          type: string
+          description: Display name of the product
+        slug:
+          type: string
+          description: URL-safe unique identifier
+        price:
+          type: number
+          format: float
+          description: Base price in INR
+        discount_percent:
+          type: number
+          format: float
+          description: Discount percentage (0 means no discount)
+        discounted_price:
+          type: number
+          format: float
+          description: Computed final price after discount
+        attributes:
+          type: array
+          description: Dynamic key-value attributes (e.g. level, theme, size)
+          items:
+            $ref: "#/components/schemas/ProductAttribute"
+        cover_image:
+          oneOf:
+            - $ref: "#/components/schemas/ProductImage"
+            - type: "null"
+          description: Primary cover image of the product
+        categories:
+          type: array
+          description: Categories this product belongs to
+          items:
+            $ref: "#/components/schemas/Category"
+        is_active:
+          type: boolean
+          description: Whether the product is publicly visible
+      required:
+        - id
+        - name
+        - slug
+        - price
+        - discount_percent
+        - discounted_price
+        - attributes
+        - categories
+        - is_active
+      example:
+        id: "a1b2c3d4-e5f6-7890-ab12-cd34ef567890"
+        name: "Mandala Colouring Journal A5"
+        slug: "mandala-colouring-journal-a5"
+        price: 499.00
+        discount_percent: 10.0
+        discounted_price: 449.10
+        attributes:
+          - attribute_value_id: "db0e8400-e29b-41d4-a716-446655440021"
+            attribute_id: "da0e8400-e29b-41d4-a716-446655440020"
+            code: "level"
+            attribute_name: "Skill Level"
+            value: "Beginner"
+            value_slug: "beginner"
+            is_filterable: true
+          - attribute_value_id: "dc0e8400-e29b-41d4-a716-446655440022"
+            attribute_id: "dd0e8400-e29b-41d4-a716-446655440023"
+            code: "theme"
+            attribute_name: "Theme"
+            value: "Mandala"
+            value_slug: "mandala"
+            is_filterable: true
+        cover_image:
+          id: "f1e2d3c4-b5a6-7890-1234-56789abcdef0"
+          url: "https://cdn.example.com/products/mandala-journal-thumb.jpg"
+          alt_text: "Mandala Colouring Journal A5"
+          sort_order: 1
+        categories:
+          - id: "c1a2b3d4-e5f6-7890-ab12-cd34ef567890"
+            name: "Journals"
+            slug: "journals"
+            description: null
+            image_url: null
+            created_at: "2026-01-01T00:00:00Z"
+            updated_at: "2026-01-01T00:00:00Z"
+        is_active: true
+
+    ProductFilters:
+      type: object
+      description: Available filter option values derived from the current product catalog
+      properties:
+        categories:
+          type: array
+          description: Available category slugs
+          items:
+            type: string
+            description: Category slug
+        attributes:
+          type: array
+          description: Available attribute filter groups (one entry per attribute key present in the result set)
+          items:
+            $ref: "#/components/schemas/AttributeFilterGroup"
+        sort_options:
+          type: array
+          description: Supported sort_by values
+          items:
+            type: string
+            enum: [price_asc, price_desc, newest, popular]
+            description: Sort option identifier
+      required: [categories, attributes, sort_options]
+      example:
+        categories: ["journals", "sketch-pads", "colouring-books"]
+        attributes:
+          - attribute_id: "da0e8400-e29b-41d4-a716-446655440020"
+            code: "level"
+            attribute_name: "Skill Level"
+            is_filterable: true
+            values:
+              - id: "db0e8400-e29b-41d4-a716-446655440021"
+                value_slug: "beginner"
+                value: "Beginner"
+              - id: "dc0e8400-e29b-41d4-a716-446655440022"
+                value_slug: "intermediate"
+                value: "Intermediate"
+          - attribute_id: "dd0e8400-e29b-41d4-a716-446655440023"
+            code: "theme"
+            attribute_name: "Theme"
+            is_filterable: true
+            values:
+              - id: "de0e8400-e29b-41d4-a716-446655440024"
+                value_slug: "mandala"
+                value: "Mandala"
+              - id: "df0e8400-e29b-41d4-a716-446655440025"
+                value_slug: "floral"
+                value: "Floral"
+        sort_options: ["price_asc", "price_desc", "newest", "popular"]
+
+    ProductListResponse:
+      type: object
+      description: Paginated product list response including available filters
+      properties:
+        data:
+          type: array
+          description: Array of abbreviated product summaries
+          items:
+            $ref: "#/components/schemas/ProductSummary"
+        meta:
+          $ref: "#/components/schemas/PaginationMeta"
+        filters:
+          $ref: "#/components/schemas/ProductFilters"
+      required: [data, meta, filters]
+      example:
+        data:
+          - id: "a1b2c3d4-e5f6-7890-ab12-cd34ef567890"
+            name: "Mandala Colouring Journal A5"
+            slug: "mandala-colouring-journal-a5"
+            price: 499.00
+            discount_percent: 10.0
+            discounted_price: 449.10
+            attributes:
+              - attribute_value_id: "db0e8400-e29b-41d4-a716-446655440021"
+                attribute_id: "da0e8400-e29b-41d4-a716-446655440020"
+                code: "level"
+                attribute_name: "Skill Level"
+                value: "Beginner"
+                value_slug: "beginner"
+                is_filterable: true
+            cover_image: null
+            categories: []
+            is_active: true
+        meta:
+          total: 87
+          page: 1
+          limit: 20
+          total_pages: 5
+        filters:
+          categories: ["journals", "sketch-pads"]
+          attributes:
+            - attribute_id: "da0e8400-e29b-41d4-a716-446655440020"
+              code: "level"
+              attribute_name: "Skill Level"
+              is_filterable: true
+              values:
+                - id: "db0e8400-e29b-41d4-a716-446655440021"
+                  value_slug: "beginner"
+                  value: "Beginner"
+                - id: "dc0e8400-e29b-41d4-a716-446655440022"
+                  value_slug: "intermediate"
+                  value: "Intermediate"
+          sort_options: ["price_asc", "price_desc", "newest", "popular"]
+
+    CreateProductRequest:
+      type: object
+      description: |
+        Request body to create a new product.
+        Attributes (level, theme, size, etc.) are managed separately via
+        POST /api/v1/admin/products/{id}/attributes after creation.
+      properties:
+        name:
+          type: string
+          description: Display name of the product
+        slug:
+          type: string
+          description: URL-safe unique identifier; must be unique across all products
+        description:
+          type: string
+          description: Full product description
+        price:
+          type: number
+          format: float
+          minimum: 0
+          description: Base price in INR
+        discount_percent:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+          description: Discount percentage (0 means no discount)
+        stock:
+          type: integer
+          minimum: 0
+          description: Initial stock quantity
+        category_ids:
+          type: array
+          description: UUIDs of categories to associate with the product
+          items:
+            type: string
+            format: uuid
+            description: Category UUID
+        image_urls:
+          type: array
+          description: Ordered list of image objects to attach
+          items:
+            type: object
+            description: Image data for a new product image
+            properties:
+              url:
+                type: string
+                format: uri
+                description: Full URL of the image
+              alt_text:
+                type: ["string", "null"]
+                description: Alt text or null
+              sort_order:
+                type: integer
+                description: Display order index
+            required: [url, sort_order]
+        is_active:
+          type: boolean
+          description: Whether the product should be publicly visible immediately
+      required: [name, slug, description, price, discount_percent, stock, is_active]
+      example:
+        name: "Mandala Colouring Journal A5"
+        slug: "mandala-colouring-journal-a5"
+        description: "A beautifully crafted A5 journal with 120 mandala colouring pages."
+        price: 499.00
+        discount_percent: 10.0
+        stock: 150
+        category_ids: ["c1a2b3d4-e5f6-7890-ab12-cd34ef567890"]
+        image_urls:
+          - url: "https://cdn.example.com/products/mandala-journal-front.jpg"
+            alt_text: "Front cover"
+            sort_order: 1
+        is_active: true
+
+    UpdateProductRequest:
+      type: object
+      description: |
+        Request body to update a product; all fields are optional.
+        Attributes (level, theme, size, etc.) are managed separately via
+        PUT /api/v1/admin/products/{id}/attributes/{attrId}.
+      properties:
+        name:
+          type: string
+          description: Updated display name
+        slug:
+          type: string
+          description: Updated URL-safe slug
+        description:
+          type: string
+          description: Updated product description
+        price:
+          type: number
+          format: float
+          minimum: 0
+          description: Updated base price in INR
+        discount_percent:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+          description: Updated discount percentage
+        stock:
+          type: integer
+          minimum: 0
+          description: Updated stock quantity
+        category_ids:
+          type: array
+          description: Replace associated categories with this list of UUIDs
+          items:
+            type: string
+            format: uuid
+            description: Category UUID
+        image_urls:
+          type: array
+          description: Replace product images with this ordered list
+          items:
+            type: object
+            description: Image data for a product image
+            properties:
+              url:
+                type: string
+                format: uri
+                description: Full URL of the image
+              alt_text:
+                type: ["string", "null"]
+                description: Alt text or null
+              sort_order:
+                type: integer
+                description: Display order index
+            required: [url, sort_order]
+        is_active:
+          type: boolean
+          description: Updated visibility flag
+      example:
+        price: 449.00
+        discount_percent: 0.0
+        stock: 200
+        is_active: true
+
+    # ------------------------------------------------------------------
+    # Product Attributes
+    # ------------------------------------------------------------------
+
+    ProductAttribute:
+      type: object
+      description: |
+        Denormalized view of a PRODUCT_ATTRIBUTE_ASSIGNMENTS row.
+        Returned when listing or reading product attributes. Joins across
+        PRODUCT_ATTRIBUTES (dimension definition) and PRODUCT_ATTRIBUTE_VALUES (allowed value).
+      required: [attribute_value_id, attribute_id, code, attribute_name, value, value_slug]
+      properties:
+        attribute_value_id:
+          type: string
+          format: uuid
+          description: UUID of the assigned PRODUCT_ATTRIBUTE_VALUES row; used as the identifier in DELETE assignment requests
+          example: "db0e8400-e29b-41d4-a716-446655440021"
+        attribute_id:
+          type: string
+          format: uuid
+          description: UUID of the PRODUCT_ATTRIBUTES definition row
+          example: "da0e8400-e29b-41d4-a716-446655440020"
+        code:
+          type: string
+          description: Machine-readable attribute dimension code from PRODUCT_ATTRIBUTES.code (e.g. level, theme, size)
+          example: "level"
+        attribute_name:
+          type: string
+          description: Display name of the attribute dimension from PRODUCT_ATTRIBUTES.name
+          example: "Skill Level"
+        value:
+          type: string
+          description: Human-readable attribute value from PRODUCT_ATTRIBUTE_VALUES.value
+          example: "Beginner"
+        value_slug:
+          type: string
+          description: URL-safe slug from PRODUCT_ATTRIBUTE_VALUES.slug; used as the filter query param value
+          example: "beginner"
+        is_filterable:
+          type: boolean
+          description: Whether this attribute dimension is exposed as a product list filter
+          example: true
+      example:
+        attribute_value_id: "db0e8400-e29b-41d4-a716-446655440021"
+        attribute_id: "da0e8400-e29b-41d4-a716-446655440020"
+        code: "level"
+        attribute_name: "Skill Level"
+        value: "Beginner"
+        value_slug: "beginner"
+        is_filterable: true
+
+    AssignProductAttributeRequest:
+      type: object
+      description: |
+        Assign a pre-defined attribute value to a product (creates a PRODUCT_ATTRIBUTE_ASSIGNMENTS row).
+        The value must already exist in PRODUCT_ATTRIBUTE_VALUES. Use the admin-attributes endpoints
+        to create dimensions and values before assigning them to products.
+      required: [attribute_value_id]
+      properties:
+        attribute_value_id:
+          type: string
+          format: uuid
+          description: UUID of the PRODUCT_ATTRIBUTE_VALUES row to assign to this product
+          example: "db0e8400-e29b-41d4-a716-446655440021"
+      example:
+        attribute_value_id: "db0e8400-e29b-41d4-a716-446655440021"
+
+    AttributeDefinition:
+      type: object
+      description: |
+        An attribute dimension definition (PRODUCT_ATTRIBUTES table).
+        Represents a filterable dimension such as level, theme, or size.
+        Each definition has a set of allowed values in PRODUCT_ATTRIBUTE_VALUES.
+      required: [id, code, name, is_filterable, sort_order, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Attribute definition UUID
+          example: "da0e8400-e29b-41d4-a716-446655440020"
+        code:
+          type: string
+          description: Machine-readable unique code (e.g. level, theme, size); used as the URL query param name for filtering
+          example: "level"
+        name:
+          type: string
+          description: Human-readable display name
+          example: "Skill Level"
+        is_filterable:
+          type: boolean
+          description: Whether this dimension is exposed as a filter on the product list page
+          example: true
+        sort_order:
+          type: integer
+          description: Display order in filter UI (ascending)
+          example: 1
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp
+          example: "2026-01-01T00:00:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: Last update timestamp
+          example: "2026-01-10T00:00:00Z"
+      example:
+        id: "da0e8400-e29b-41d4-a716-446655440020"
+        code: "level"
+        name: "Skill Level"
+        is_filterable: true
+        sort_order: 1
+        created_at: "2026-01-01T00:00:00Z"
+        updated_at: "2026-01-10T00:00:00Z"
+
+    AttributeDefinitionValue:
+      type: object
+      description: A single allowed value for an attribute dimension (PRODUCT_ATTRIBUTE_VALUES table)
+      required: [id, attribute_id, value, value_slug, sort_order, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Value UUID; used as attribute_value_id when assigning to products
+          example: "db0e8400-e29b-41d4-a716-446655440021"
+        attribute_id:
+          type: string
+          format: uuid
+          description: Parent attribute definition UUID
+          example: "da0e8400-e29b-41d4-a716-446655440020"
+        value:
+          type: string
+          description: Human-readable value label
+          example: "Beginner"
+        value_slug:
+          type: string
+          description: URL-safe slug used in filter query params
+          example: "beginner"
+        sort_order:
+          type: integer
+          description: Display order within this dimension (ascending)
+          example: 1
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp
+          example: "2026-01-01T00:00:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: Last update timestamp
+          example: "2026-01-10T00:00:00Z"
+      example:
+        id: "db0e8400-e29b-41d4-a716-446655440021"
+        attribute_id: "da0e8400-e29b-41d4-a716-446655440020"
+        value: "Beginner"
+        value_slug: "beginner"
+        sort_order: 1
+        created_at: "2026-01-01T00:00:00Z"
+        updated_at: "2026-01-10T00:00:00Z"
+
+    CreateAttributeDefinitionRequest:
+      type: object
+      description: Create a new product attribute dimension
+      required: [code, name]
+      properties:
+        code:
+          type: string
+          description: Machine-readable unique code (lowercase, no spaces)
+          example: "level"
+        name:
+          type: string
+          description: Human-readable display name
+          example: "Skill Level"
+        is_filterable:
+          type: boolean
+          description: Expose as a filter on the product list page (default true)
+          example: true
+        sort_order:
+          type: integer
+          description: Display order in the filter UI
+          example: 1
+      example:
+        code: "level"
+        name: "Skill Level"
+        is_filterable: true
+        sort_order: 1
+
+    UpdateAttributeDefinitionRequest:
+      type: object
+      description: Update an attribute dimension; all fields optional
+      properties:
+        name:
+          type: string
+          description: Updated display name
+          example: "Skill Level"
+        is_filterable:
+          type: boolean
+          description: Updated filterable flag
+          example: false
+        sort_order:
+          type: integer
+          description: Updated display order
+          example: 2
+      example:
+        is_filterable: false
+
+    CreateAttributeDefinitionValueRequest:
+      type: object
+      description: Add an allowed value to an attribute dimension
+      required: [value]
+      properties:
+        value:
+          type: string
+          description: Human-readable value label
+          example: "Intermediate"
+        value_slug:
+          type: string
+          description: URL-safe slug (auto-generated from value if omitted)
+          example: "intermediate"
+        sort_order:
+          type: integer
+          description: Display order within this dimension
+          example: 2
+      example:
+        value: "Intermediate"
+        sort_order: 2
+
+    UpdateAttributeDefinitionValueRequest:
+      type: object
+      description: Update an attribute value; all fields optional
+      properties:
+        value:
+          type: string
+          description: Updated human-readable label
+          example: "Intermediate"
+        value_slug:
+          type: string
+          description: Updated URL slug
+          example: "intermediate"
+        sort_order:
+          type: integer
+          description: Updated sort order
+          example: 2
+      example:
+        sort_order: 3
+
+    AttributeFilterGroup:
+      type: object
+      description: |
+        All distinct values available for a single filterable attribute dimension
+        within the current product result set. Enriched with the full attribute definition.
+      required: [attribute_id, code, attribute_name, is_filterable, values]
+      properties:
+        attribute_id:
+          type: string
+          format: uuid
+          description: Attribute definition UUID
+          example: "da0e8400-e29b-41d4-a716-446655440020"
+        code:
+          type: string
+          description: Machine-readable attribute dimension code (e.g. level, theme, size)
+          example: "level"
+        attribute_name:
+          type: string
+          description: Display name of the attribute dimension
+          example: "Skill Level"
+        is_filterable:
+          type: boolean
+          description: Whether this dimension is shown as a filter in the UI
+          example: true
+        values:
+          type: array
+          description: Distinct attribute values present in the result set for this dimension
+          items:
+            type: object
+            description: A single available filter value
+            required: [id, value_slug, value]
+            properties:
+              id:
+                type: string
+                format: uuid
+                description: attribute_value_id (PRODUCT_ATTRIBUTE_VALUES.id) — send this as attr_value_id[] to filter by this value
+                example: "db0e8400-e29b-41d4-a716-446655440021"
+              value_slug:
+                type: string
+                description: URL-safe slug (retained for display and category page routing)
+                example: "beginner"
+              value:
+                type: string
+                description: Human-readable display label
+                example: "Beginner"
+      example:
+        attribute_id: "da0e8400-e29b-41d4-a716-446655440020"
+        code: "level"
+        attribute_name: "Skill Level"
+        is_filterable: true
+        values:
+          - id: "db0e8400-e29b-41d4-a716-446655440021"
+            value_slug: "beginner"
+            value: "Beginner"
+          - id: "dc0e8400-e29b-41d4-a716-446655440022"
+            value_slug: "intermediate"
+            value: "Intermediate"
+
+    # ------------------------------------------------------------------
+    # Cart
+    # ------------------------------------------------------------------
+
+    CartItem:
+      type: object
+      description: A single line item in the shopping cart
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier of the cart item
+        product:
+          $ref: "#/components/schemas/ProductSummary"
+        quantity:
+          type: integer
+          minimum: 1
+          description: Number of units of this product in the cart
+        unit_price:
+          type: number
+          format: float
+          description: Price per unit at the time the item was added (INR)
+        line_total:
+          type: number
+          format: float
+          description: unit_price multiplied by quantity (INR)
+      required: [id, product, quantity, unit_price, line_total]
+      example:
+        id: "7b4e2a11-9c83-4f6d-a512-1d8e3b7c0a55"
+        product:
+          id: "a1b2c3d4-e5f6-7890-ab12-cd34ef567890"
+          name: "Mandala Colouring Journal A5"
+          slug: "mandala-colouring-journal-a5"
+          price: 499.00
+          discount_percent: 10.0
+          discounted_price: 449.10
+          attributes:
+            - attribute_value_id: "db0e8400-e29b-41d4-a716-446655440021"
+              attribute_id: "da0e8400-e29b-41d4-a716-446655440020"
+              code: "level"
+              attribute_name: "Skill Level"
+              value: "Beginner"
+              value_slug: "beginner"
+              is_filterable: true
+          cover_image: null
+          categories: []
+          is_active: true
+        quantity: 2
+        unit_price: 449.10
+        line_total: 898.20
+
+    Cart:
+      type: object
+      description: The customer's shopping cart
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier of the cart
+        items:
+          type: array
+          description: List of cart line items
+          items:
+            $ref: "#/components/schemas/CartItem"
+        item_count:
+          type: integer
+          description: Total number of unique product lines in the cart
+        subtotal:
+          type: number
+          format: float
+          description: Sum of all line_total values before any discounts or tax (INR)
+        updated_at:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp when the cart was last modified
+      required: [id, items, item_count, subtotal, updated_at]
+      example:
+        id: "d4e5f6a7-b8c9-0123-de45-f6789abcdef0"
+        items:
+          - id: "7b4e2a11-9c83-4f6d-a512-1d8e3b7c0a55"
+            product:
+              id: "a1b2c3d4-e5f6-7890-ab12-cd34ef567890"
+              name: "Mandala Colouring Journal A5"
+              slug: "mandala-colouring-journal-a5"
+              price: 499.00
+              discount_percent: 10.0
+              discounted_price: 449.10
+              level: "beginner"
+              theme: "mandala"
+              size: "A5"
+              cover_image: null
+              categories: []
+              is_active: true
+            quantity: 2
+            unit_price: 449.10
+            line_total: 898.20
+        item_count: 1
+        subtotal: 898.20
+        updated_at: "2026-03-20T15:30:00Z"
+
+    AddToCartRequest:
+      type: object
+      description: Request body to add a product to the cart
+      properties:
+        product_id:
+          type: string
+          format: uuid
+          description: UUID of the product to add
+        quantity:
+          type: integer
+          minimum: 1
+          description: Number of units to add
+      required: [product_id, quantity]
+      example:
+        product_id: "a1b2c3d4-e5f6-7890-ab12-cd34ef567890"
+        quantity: 2
+
+    UpdateCartItemRequest:
+      type: object
+      description: Request body to update the quantity of a cart item
+      properties:
+        quantity:
+          type: integer
+          minimum: 1
+          description: New quantity; set to 0 is not allowed — use DELETE to remove
+      required: [quantity]
+      example:
+        quantity: 3
+
+    # ------------------------------------------------------------------
+    # Checkout
+    # ------------------------------------------------------------------
+
+    ApplyCouponRequest:
+      type: object
+      description: Request body containing a coupon code to apply or validate
+      properties:
+        coupon_code:
+          type: string
+          description: The coupon code string to validate
+      required: [coupon_code]
+      example:
+        coupon_code: "SAVE50"
+
+    CouponValidationResponse:
+      type: object
+      description: Result of validating a coupon code
+      properties:
+        is_valid:
+          type: boolean
+          description: Whether the coupon code is valid and can be applied
+        coupon_code:
+          type: string
+          description: The coupon code that was validated
+        discount_type:
+          type: ["string", "null"]
+          enum: [flat, percentage, null]
+          description: Type of discount — flat (fixed INR off) or percentage (% off) or null if invalid
+        discount_value:
+          type: ["number", "null"]
+          format: float
+          description: Discount value; INR amount for flat, percentage for percentage type, or null
+        message:
+          type: string
+          description: Human-readable message about the coupon validity
+      required: [is_valid, coupon_code, message]
+      example:
+        is_valid: true
+        coupon_code: "SAVE50"
+        discount_type: "flat"
+        discount_value: 50.00
+        message: "Coupon applied — INR 50 off your order"
+
+    CalculateCheckoutRequest:
+      type: object
+      description: Request body to calculate order totals, optionally with a coupon code
+      properties:
+        address_id:
+          type: string
+          format: uuid
+          description: UUID of the delivery address to use for this order
+        coupon_code:
+          type: ["string", "null"]
+          description: Optional coupon code to apply; null if no coupon
+      required: [address_id]
+      example:
+        address_id: "9e6b8c2d-1f4a-4e7d-b3c5-0a8f2d6e4b9c"
+        coupon_code: "SAVE50"
+
+    CheckoutSummary:
+      type: object
+      description: Calculated totals for the checkout including GST at 18% on (subtotal - coupon_discount)
+      properties:
+        items:
+          type: array
+          description: Cart items included in this calculation
+          items:
+            $ref: "#/components/schemas/CartItem"
+        subtotal:
+          type: number
+          format: float
+          description: Sum of all cart line totals before coupon and tax (INR)
+        coupon_code:
+          type: ["string", "null"]
+          description: Applied coupon code or null
+        coupon_discount:
+          type: number
+          format: float
+          description: Discount amount from the coupon in INR (0 if none applied)
+        taxable_amount:
+          type: number
+          format: float
+          description: subtotal minus coupon_discount; the base on which GST is calculated
+        gst_rate:
+          type: number
+          format: float
+          description: GST rate applied (always 18%)
+        gst_amount:
+          type: number
+          format: float
+          description: GST component in INR (taxable_amount * 0.18)
+        total:
+          type: number
+          format: float
+          description: Final payable amount in INR (taxable_amount + gst_amount)
+        address:
+          $ref: "#/components/schemas/Address"
+      required:
+        - items
+        - subtotal
+        - coupon_discount
+        - taxable_amount
+        - gst_rate
+        - gst_amount
+        - total
+        - address
+      example:
+        items: []
+        subtotal: 898.20
+        coupon_code: "SAVE50"
+        coupon_discount: 50.00
+        taxable_amount: 848.20
+        gst_rate: 18.0
+        gst_amount: 152.68
+        total: 1000.88
+        address:
+          id: "9e6b8c2d-1f4a-4e7d-b3c5-0a8f2d6e4b9c"
+          address_line1: "42, Rose Garden Street"
+          address_line2: "Flat 3B"
+          landmark: "Near City Mall"
+          city: "Chennai"
+          state: "Tamil Nadu"
+          pincode: "600001"
+          company_name: null
+          gst_number: null
+          phone: "+919876543210"
+          is_default: true
+          created_at: "2026-02-01T12:00:00Z"
+          updated_at: "2026-02-01T12:00:00Z"
+
+    PlaceOrderRequest:
+      type: object
+      description: Request body to place an order from the current cart
+      properties:
+        address_id:
+          type: string
+          format: uuid
+          description: UUID of the delivery address
+        coupon_code:
+          type: ["string", "null"]
+          description: Optional coupon code to apply; null if no coupon
+      required: [address_id]
+      example:
+        address_id: "9e6b8c2d-1f4a-4e7d-b3c5-0a8f2d6e4b9c"
+        coupon_code: "SAVE50"
+
+    # ------------------------------------------------------------------
+    # Orders
+    # ------------------------------------------------------------------
+
+    OrderItem:
+      type: object
+      description: A line item within a placed order (snapshot at time of purchase)
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier of the order item
+        product_id:
+          type: string
+          format: uuid
+          description: UUID of the product at time of purchase
+        product_name:
+          type: string
+          description: Product name snapshotted at time of purchase
+        product_slug:
+          type: string
+          description: Product slug snapshotted at time of purchase
+        cover_image_url:
+          type: ["string", "null"]
+          description: Cover image URL snapshotted at time of purchase or null
+        quantity:
+          type: integer
+          minimum: 1
+          description: Number of units purchased
+        unit_price:
+          type: number
+          format: float
+          description: Price per unit at time of purchase (INR)
+        line_total:
+          type: number
+          format: float
+          description: unit_price multiplied by quantity (INR)
+      required:
+        - id
+        - product_id
+        - product_name
+        - product_slug
+        - quantity
+        - unit_price
+        - line_total
+      example:
+        id: "e1f2a3b4-c5d6-7890-ef12-ab34cd567890"
+        product_id: "a1b2c3d4-e5f6-7890-ab12-cd34ef567890"
+        product_name: "Mandala Colouring Journal A5"
+        product_slug: "mandala-colouring-journal-a5"
+        cover_image_url: "https://cdn.example.com/products/mandala-journal-front.jpg"
+        quantity: 2
+        unit_price: 449.10
+        line_total: 898.20
+
+    Order:
+      type: object
+      description: A customer order record
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier of the order
+        order_number:
+          type: string
+          description: Human-readable order reference number
+        status:
+          type: string
+          enum: [open, fulfilled, cancelled]
+          description: Current status of the order
+        items:
+          type: array
+          description: Line items in this order
+          items:
+            $ref: "#/components/schemas/OrderItem"
+        shipping_address:
+          $ref: "#/components/schemas/Address"
+        subtotal:
+          type: number
+          format: float
+          description: Sum of all line totals before coupon and tax (INR)
+        coupon_code:
+          type: ["string", "null"]
+          description: Coupon code used or null
+        coupon_discount:
+          type: number
+          format: float
+          description: Discount amount from coupon in INR (0 if none)
+        taxable_amount:
+          type: number
+          format: float
+          description: subtotal minus coupon_discount
+        gst_rate:
+          type: number
+          format: float
+          description: GST rate applied (18%)
+        gst_amount:
+          type: number
+          format: float
+          description: GST component in INR
+        total:
+          type: number
+          format: float
+          description: Final paid amount in INR
+        created_at:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp when the order was placed
+        updated_at:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp when the order was last updated
+      required:
+        - id
+        - order_number
+        - status
+        - items
+        - shipping_address
+        - subtotal
+        - coupon_discount
+        - taxable_amount
+        - gst_rate
+        - gst_amount
+        - total
+        - created_at
+        - updated_at
+      example:
+        id: "b2c3d4e5-f6a7-8901-bc23-de45f6789012"
+        order_number: "ORD-2026-00042"
+        status: "open"
+        items:
+          - id: "e1f2a3b4-c5d6-7890-ef12-ab34cd567890"
+            product_id: "a1b2c3d4-e5f6-7890-ab12-cd34ef567890"
+            product_name: "Mandala Colouring Journal A5"
+            product_slug: "mandala-colouring-journal-a5"
+            cover_image_url: null
+            quantity: 2
+            unit_price: 449.10
+            line_total: 898.20
+        shipping_address:
+          id: "9e6b8c2d-1f4a-4e7d-b3c5-0a8f2d6e4b9c"
+          address_line1: "42, Rose Garden Street"
+          address_line2: "Flat 3B"
+          landmark: "Near City Mall"
+          city: "Chennai"
+          state: "Tamil Nadu"
+          pincode: "600001"
+          company_name: null
+          gst_number: null
+          phone: "+919876543210"
+          is_default: true
+          created_at: "2026-02-01T12:00:00Z"
+          updated_at: "2026-02-01T12:00:00Z"
+        subtotal: 898.20
+        coupon_code: "SAVE50"
+        coupon_discount: 50.00
+        taxable_amount: 848.20
+        gst_rate: 18.0
+        gst_amount: 152.68
+        total: 1000.88
+        created_at: "2026-03-20T16:00:00Z"
+        updated_at: "2026-03-20T16:00:00Z"
+
+    OrderListResponse:
+      type: object
+      description: Paginated list of orders
+      properties:
+        data:
+          type: array
+          description: Array of order objects
+          items:
+            $ref: "#/components/schemas/Order"
+        meta:
+          $ref: "#/components/schemas/PaginationMeta"
+      required: [data, meta]
+      example:
+        data: []
+        meta:
+          total: 5
+          page: 1
+          limit: 20
+          total_pages: 1
+
+    UpdateOrderStatusRequest:
+      type: object
+      description: Request body for admin to update the status of an order
+      properties:
+        status:
+          type: string
+          enum: [open, fulfilled, cancelled]
+          description: New status to set on the order
+      required: [status]
+      example:
+        status: "fulfilled"
+
+    # ------------------------------------------------------------------
+    # Contact
+    # ------------------------------------------------------------------
+
+    ContactQueryRequest:
+      type: object
+      description: Request body for the public contact / enquiry form
+      properties:
+        name:
+          type: string
+          description: Full name of the person submitting the enquiry
+        email:
+          type: string
+          format: email
+          description: Email address to reply to
+        phone:
+          type: ["string", "null"]
+          description: Optional contact phone number or null
+        subject:
+          type: string
+          description: Subject or category of the enquiry
+        message:
+          type: string
+          description: Full message body of the enquiry
+      required: [name, email, subject, message]
+      example:
+        name: "Bob Kumar"
+        email: "bob@example.com"
+        phone: "+919876500000"
+        subject: "Bulk order enquiry"
+        message: "Hi, I would like to place a bulk order of 50 journals for a corporate gifting event."
+
+    # ------------------------------------------------------------------
+    # Landing
+    # ------------------------------------------------------------------
+
+    CarouselSlide:
+      type: object
+      description: A single carousel / banner slide shown on the landing page
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier of the carousel slide
+        title:
+          type: string
+          description: Headline text for the slide
+        subtitle:
+          type: ["string", "null"]
+          description: Optional sub-headline or null
+        image_url:
+          type: string
+          format: uri
+          description: Full URL of the slide background or feature image
+        cta_label:
+          type: ["string", "null"]
+          description: Call-to-action button label or null
+        cta_url:
+          type: ["string", "null"]
+          description: Call-to-action link URL or null
+        sort_order:
+          type: integer
+          description: Display order; lower numbers appear first
+      required: [id, title, image_url, sort_order]
+      example:
+        id: "1a2b3c4d-5e6f-7890-ab12-cd34ef567890"
+        title: "Discover Handcrafted Art Books"
+        subtitle: "Explore our new mandala colouring collection"
+        image_url: "https://cdn.example.com/banners/mandala-banner.jpg"
+        cta_label: "Shop Now"
+        cta_url: "/products?category[]=colouring-books"
+        sort_order: 1
+
+    LandingPageResponse:
+      type: object
+      description: Data for the public landing page — carousel slides and featured products
+      properties:
+        carousel_slides:
+          type: array
+          description: Ordered list of carousel banner slides
+          items:
+            $ref: "#/components/schemas/CarouselSlide"
+        featured_products:
+          type: array
+          description: Curated list of featured products for the landing page
+          items:
+            $ref: "#/components/schemas/ProductSummary"
+      required: [carousel_slides, featured_products]
+      example:
+        carousel_slides:
+          - id: "1a2b3c4d-5e6f-7890-ab12-cd34ef567890"
+            title: "Discover Handcrafted Art Books"
+            subtitle: "Explore our new mandala colouring collection"
+            image_url: "https://cdn.example.com/banners/mandala-banner.jpg"
+            cta_label: "Shop Now"
+            cta_url: "/products?category[]=colouring-books"
+            sort_order: 1
+        featured_products:
+          - id: "a1b2c3d4-e5f6-7890-ab12-cd34ef567890"
+            name: "Mandala Colouring Journal A5"
+            slug: "mandala-colouring-journal-a5"
+            price: 499.00
+            discount_percent: 10.0
+            discounted_price: 449.10
+            level: "beginner"
+            theme: "mandala"
+            size: "A5"
+            cover_image: null
+            categories: []
+            is_active: true
