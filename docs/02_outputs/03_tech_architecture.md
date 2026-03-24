@@ -2,9 +2,9 @@
 
 ## 1. System Overview
 
-`e-commerce-site` is a books-focused e-commerce platform built for a modest but real production workload: roughly 100 concurrent users, low-to-moderate catalog churn, and strict correctness requirements around cart, checkout, payment confirmation, and order lifecycle. The architecture is intentionally conservative. It prioritizes operational simplicity, data integrity, and security over distributed-system complexity.
+`e-commerce-site` is a books-focused e-commerce platform built for a modest but real production workload: roughly 100 concurrent users, low-to-moderate catalog churn, and strict correctness requirements around cart, checkout, payment confirmation, and order lifecycle. The architecture stays intentionally conservative. It prioritizes operational simplicity, data integrity, and security over distributed-system complexity.
 
-The initial production deployment uses a single AWS EC2 instance running the full application stack with Docker Compose. The frontend is a statically generated NextJS 16 storefront served by Nginx from the same host. The backend is a Go 1.26 API built with Gin and run in its own container. A separate Go worker container handles asynchronous jobs. PostgreSQL and Redis also run on the same EC2 instance with persistent storage on EBS-backed volumes.
+The initial production deployment uses a single AWS EC2 instance for the backend stack with Docker Compose. The frontend is a statically generated NextJS 16 storefront deployed manually to S3 and served through CloudFront. The backend is a Go 1.26 API built with Gin and run in its own container. A separate Go worker container handles asynchronous jobs. PostgreSQL and Redis also run on the same EC2 instance with persistent storage on EBS-backed volumes.
 
 This is the right architecture for the stated scale and current delivery maturity. A single EC2 host minimizes moving parts, keeps operational ownership simple, aligns directly with Docker Compose-based local development, and avoids premature investment in load balancers, managed queues, and multi-service orchestration. It also leaves a clean upgrade path: PostgreSQL and Redis can be externalized first, then the API and worker can move to ECS once throughput, reliability, or deployment frequency justify the added complexity.
 
@@ -13,9 +13,9 @@ flowchart LR
     U[Customer Browser]
     A[Admin Browser]
     DNS[Route 53]
+    CF[CloudFront]
+    S3[S3 Static Site Bucket]
     EC2[Single AWS EC2 Instance\nDocker Compose]
-    NGINX[Nginx Reverse Proxy\nTLS + Static Assets]
-    FE[NextJS 16 Static Export]
     API[Go 1.26 + Gin API]
     WORKER[Go 1.26 Worker]
     POSTGRES[(PostgreSQL 18 Container)]
@@ -26,9 +26,10 @@ flowchart LR
 
     U --> DNS
     A --> DNS
-    DNS --> NGINX
-    NGINX --> FE
-    NGINX --> API
+    DNS --> CF
+    CF --> S3
+    U -. API calls .-> API
+    A -. API calls .-> API
     API --> POSTGRES
     API --> REDIS
     API --> PSP
@@ -36,8 +37,6 @@ flowchart LR
     WORKER --> POSTGRES
     WORKER --> SES
     WORKER --> PSP
-    EC2 -. hosts .-> NGINX
-    EC2 -. hosts .-> FE
     EC2 -. hosts .-> API
     EC2 -. hosts .-> WORKER
     EC2 -. hosts .-> POSTGRES
@@ -50,7 +49,7 @@ flowchart LR
 ### Frontend
 
 - Technology: NextJS 16.0.x, React 19.x, Node.js 22.x build runtime
-- Deployment form: static export served by Nginx from the EC2 host
+- Deployment form: static export uploaded to S3 and served through CloudFront
 - Responsibility:
   - Public storefront
   - Product listing and detail pages
@@ -58,29 +57,28 @@ flowchart LR
   - Customer account pages
   - SEO-friendly marketing and category pages
 - Interfaces:
-  - Exposes prerendered HTML, JS, CSS, and images through Nginx
+  - Exposes prerendered HTML, JS, CSS, and images through CloudFront
   - Calls backend REST APIs over HTTPS
   - Depends on backend for user-specific and transactional data
 
 The storefront should use static generation for category pages, content pages, and product pages. Cart, account, inventory availability, and order history are dynamic and must be fetched from the API at runtime.
 
-### Edge and Web Server
+### Frontend Delivery
 
-- Technology: Nginx 1.26 running on the EC2 host
+- Technology: Amazon S3 + CloudFront
 - Responsibility:
-  - TLS termination
-  - Serve static frontend assets
-  - Reverse proxy `/api/*` to the Go API
-  - Apply compression, caching headers, and request size limits
+  - Store and serve the static storefront build output
+  - Terminate TLS for the storefront domain
+  - Cache static storefront assets at the edge
 - Interfaces:
   - Exposes HTTPS to browsers
-  - Depends on local frontend build artifacts and the API container
+  - Pulls immutable build artifacts from S3
 
-Nginx is the correct initial edge layer for a single-host deployment. It keeps the stack small and gives enough control over TLS, routing, and caching without introducing a separate load balancer or CDN on day one.
+S3 plus CloudFront is the correct initial frontend hosting model. It keeps the static storefront out of the EC2 runtime path and removes the need to serve frontend assets from the backend host.
 
 ### Backend API
 
-- Technology: Go 1.26, Gin 1.11.x, pgx v5, sqlc 1.28.x, goose 3.x
+- Technology: Go 1.26, Gin 1.12.0, pgx v5.9.x, sqlc 1.30.x, goose 3.27.x
 - Deployment form: Docker Compose service on a single EC2 host
 - Responsibility:
   - Authentication and account management
@@ -113,7 +111,7 @@ The worker must remain a separate process from the API even on one machine. That
 
 - Technology: PostgreSQL 18 container on the EC2 host with Docker named volumes on EBS-backed storage
 - Responsibility:
-  - System of record for users, products, carts, orders, payments, consent, and audit data
+  - System of record for users, products, carts, orders, payments, coupons, consent, and audit data
 - Interfaces:
   - Accessed only by API and worker services over the internal Docker network
 
@@ -192,24 +190,29 @@ This is the simplest safe setup for a single-host system. It avoids hand-editing
 
 ## 3. Data Architecture
 
-The data model is centered on identity, catalog, inventory, carts, orders, payments, consent, and auditability. It is normalized enough to preserve consistency, but not abstracted into generic schemas that make query behavior hard to reason about.
+The data model is centered on identity, catalog, inventory, cart state, orders, payments, coupons, consent, and auditability. It is normalized enough to preserve consistency, but not abstracted into generic schemas that make query behavior hard to reason about.
 
 ```mermaid
 erDiagram
     USERS ||--o{ ADDRESSES : has
-    USERS ||--o{ CARTS : owns
+    USERS ||--o{ CART : owns
     USERS ||--o{ ORDERS : places
+    USERS ||--o{ COUPON_USER : uses
     USERS ||--o{ CONSENTS : grants
     USERS ||--o{ REFRESH_TOKENS : receives
     CATEGORIES ||--o{ PRODUCTS : contains
-    PRODUCTS ||--o{ INVENTORY_ITEMS : stocked_as
-    PRODUCTS ||--o{ CART_ITEMS : added_as
+    PRODUCTS ||--|| INVENTORY_ITEMS : stocked_as
+    PRODUCTS ||--o{ PRODUCT_IMAGE : has
+    PRODUCTS ||--o{ CART : added_as
     PRODUCTS ||--o{ ORDER_ITEMS : purchased_as
-    CARTS ||--o{ CART_ITEMS : contains
+    PRODUCTS ||--o{ PRODUCT_ATTRIBUTE_ASSIGNMENTS : tagged_with
+    PRODUCT_ATTRIBUTES ||--o{ PRODUCT_ATTRIBUTE_VALUES : defines
+    PRODUCT_ATTRIBUTE_VALUES ||--o{ PRODUCT_ATTRIBUTE_ASSIGNMENTS : assigned_as
+    ORDERS ||--|| ORDER_ADDRESS : snapshots_to
     ORDERS ||--o{ ORDER_ITEMS : contains
     ORDERS ||--o{ PAYMENTS : paid_by
-    ORDERS ||--|| ADDRESSES : ships_to
     ORDERS ||--o{ AUDIT_EVENTS : emits
+    COUPON ||--o{ COUPON_USER : redeemed_by
 
     USERS {
       uuid id PK
@@ -217,7 +220,7 @@ erDiagram
       text password_hash
       text full_name
       text phone_e164
-      boolean is_admin
+      text role
       timestamptz created_at
       timestamptz updated_at
       timestamptz deleted_at
@@ -253,6 +256,8 @@ erDiagram
       text isbn13 UK
       text description
       numeric price_inr
+      int discount_percent
+      text image_url
       text currency_code
       text language_code
       int page_count
@@ -261,6 +266,36 @@ erDiagram
       timestamptz created_at
       timestamptz updated_at
     }
+    PRODUCT_IMAGE {
+      uuid id PK
+      uuid product_id FK
+      text image_url
+      timestamptz created_at
+      timestamptz updated_at
+    }
+    PRODUCT_ATTRIBUTES {
+      uuid id PK
+      text code UK
+      text name
+      boolean is_filterable
+      int sort_order
+      timestamptz created_at
+      timestamptz updated_at
+    }
+    PRODUCT_ATTRIBUTE_VALUES {
+      uuid id PK
+      uuid attribute_id FK
+      text value
+      text slug
+      int sort_order
+      timestamptz created_at
+      timestamptz updated_at
+    }
+    PRODUCT_ATTRIBUTE_ASSIGNMENTS {
+      uuid product_id PK,FK
+      uuid attribute_value_id PK,FK
+      timestamptz created_at
+    }
     INVENTORY_ITEMS {
       uuid product_id PK,FK
       int on_hand
@@ -268,26 +303,17 @@ erDiagram
       int reorder_threshold
       timestamptz updated_at
     }
-    CARTS {
+    CART {
       uuid id PK
       uuid user_id FK
-      text status
-      timestamptz expires_at
-      timestamptz created_at
-      timestamptz updated_at
-    }
-    CART_ITEMS {
-      uuid cart_id PK,FK
-      uuid product_id PK,FK
+      uuid product_id FK
       int quantity
-      numeric unit_price_inr
       timestamptz created_at
       timestamptz updated_at
     }
     ORDERS {
       uuid id PK
       uuid user_id FK
-      uuid shipping_address_id FK
       text order_number UK
       text status
       numeric subtotal_inr
@@ -296,6 +322,20 @@ erDiagram
       numeric total_inr
       text currency_code
       timestamptz placed_at
+      timestamptz created_at
+      timestamptz updated_at
+    }
+    ORDER_ADDRESS {
+      uuid id PK
+      uuid order_id FK
+      text recipient_name
+      text line1
+      text line2
+      text city
+      text state
+      text postal_code
+      text country_code
+      text phone_e164
       timestamptz created_at
       timestamptz updated_at
     }
@@ -308,6 +348,25 @@ erDiagram
       int quantity
       numeric unit_price_inr
       numeric line_total_inr
+    }
+    COUPON {
+      uuid id PK
+      text name
+      text description
+      text code
+      boolean is_enable
+      int percent
+      int flat
+      timestamptz coupon_expiry
+      timestamptz created_at
+      timestamptz updated_at
+    }
+    COUPON_USER {
+      uuid id PK
+      uuid user_id FK
+      uuid coupon_id FK
+      timestamptz created_at
+      timestamptz updated_at
     }
     PAYMENTS {
       uuid id PK
@@ -358,12 +417,12 @@ erDiagram
 - `password_hash TEXT`
 - `full_name TEXT`
 - `phone_e164 TEXT`
-- `is_admin BOOLEAN`
+- `role TEXT`
 - `created_at TIMESTAMPTZ`
 - `updated_at TIMESTAMPTZ`
 - `deleted_at TIMESTAMPTZ NULL`
 
-Passwords must be hashed with Argon2id. `email` must be unique and case-insensitive.
+Passwords must be hashed with Argon2id. `email` must be unique and case-insensitive. `role` should be a database enum or constrained text column with only `admin` and `customer` as valid values.
 
 #### `products`
 - `id UUID`
@@ -375,6 +434,8 @@ Passwords must be hashed with Argon2id. `email` must be unique and case-insensit
 - `isbn13 TEXT`
 - `description TEXT`
 - `price_inr NUMERIC(12,2)`
+- `discount_percent INTEGER NULL`
+- `image_url TEXT`
 - `currency_code CHAR(3)` default `INR`
 - `language_code TEXT`
 - `page_count INTEGER`
@@ -382,6 +443,24 @@ Passwords must be hashed with Argon2id. `email` must be unique and case-insensit
 - `is_active BOOLEAN`
 - `created_at TIMESTAMPTZ`
 - `updated_at TIMESTAMPTZ`
+
+`discount_percent` should be nullable when no discount applies, and when present it must satisfy `discount_percent > 0 AND discount_percent <= 100`. `image_url` stores the default product thumbnail.
+
+#### `product_image`
+- `id UUID`
+- `product_id UUID`
+- `image_url TEXT`
+- `created_at TIMESTAMPTZ`
+- `updated_at TIMESTAMPTZ`
+
+This table stores the product gallery. The `products.image_url` field remains the canonical default thumbnail so list views do not require an extra join.
+
+#### `product_attributes`, `product_attribute_values`, `product_attribute_assignments`
+- `product_attributes` defines extensible dimensions such as `level`, `theme`, and `size`
+- `product_attribute_values` stores allowed values for each dimension
+- `product_attribute_assignments` links products to one or more values
+
+This is the recommended pattern for scale. Adding a new filter dimension later becomes an insert into `product_attributes` rather than a schema change on `products`. If a future dimension changes SKU, price, or inventory behavior, then it should be promoted to a variant model rather than remain a simple attribute.
 
 #### `inventory_items`
 - `product_id UUID`
@@ -392,10 +471,19 @@ Passwords must be hashed with Argon2id. `email` must be unique and case-insensit
 
 Available stock is `on_hand - reserved`. Inventory mutation must occur in a transaction with row-level locking on the affected SKU rows.
 
+#### `cart`
+- `id UUID`
+- `user_id UUID`
+- `product_id UUID`
+- `quantity INTEGER`
+- `created_at TIMESTAMPTZ`
+- `updated_at TIMESTAMPTZ`
+
+`cart` is one row per user-product pair. Enforce a unique constraint on `(user_id, product_id)` so each user has only one active cart entry per product and no separate cart header table is required.
+
 #### `orders`
 - `id UUID`
 - `user_id UUID`
-- `shipping_address_id UUID`
 - `order_number TEXT`
 - `status TEXT`
 - `subtotal_inr NUMERIC(12,2)`
@@ -408,6 +496,43 @@ Available stock is `on_hand - reserved`. Inventory mutation must occur in a tran
 - `updated_at TIMESTAMPTZ`
 
 `status` should be a database enum with values such as `pending_payment`, `paid`, `packed`, `shipped`, `delivered`, `cancelled`, `payment_failed`, `refunded`.
+
+#### `order_address`
+- `id UUID`
+- `order_id UUID`
+- `recipient_name TEXT`
+- `line1 TEXT`
+- `line2 TEXT`
+- `city TEXT`
+- `state TEXT`
+- `postal_code TEXT`
+- `country_code TEXT`
+- `phone_e164 TEXT`
+- `created_at TIMESTAMPTZ`
+- `updated_at TIMESTAMPTZ`
+
+`order_address` is the immutable shipping snapshot captured at checkout time. `orders` must not directly reference `addresses`, because profile edits after purchase must not rewrite the historical shipment destination for earlier orders.
+
+#### `coupon`
+- `id UUID`
+- `name TEXT`
+- `description TEXT`
+- `code TEXT`
+- `is_enable BOOLEAN`
+- `percent INTEGER`
+- `flat INTEGER`
+- `coupon_expiry TIMESTAMPTZ`
+- `created_at TIMESTAMPTZ`
+- `updated_at TIMESTAMPTZ`
+
+#### `coupon_user`
+- `id UUID`
+- `user_id UUID`
+- `coupon_id UUID`
+- `created_at TIMESTAMPTZ`
+- `updated_at TIMESTAMPTZ`
+
+`coupon_user` tracks which users have redeemed which coupons. Enforce a unique constraint on `(user_id, coupon_id)` if each coupon should be redeemable only once per user.
 
 #### `payments`
 - `id UUID`
@@ -436,21 +561,31 @@ This table is part of the DPDPA compliance baseline. Consent must be auditable, 
 The indexing strategy should be explicit and workload-driven:
 
 - `users(email)` unique btree
+- `users(role)` btree
 - `products(sku)` unique btree
 - `products(slug)` unique btree
 - `products(isbn13)` unique btree where not null
 - `products(category_id, is_active)` btree
 - `products(is_active, created_at desc)` btree
+- `cart(user_id, product_id)` unique btree
+- `cart(user_id, updated_at desc)` btree
 - `orders(user_id, created_at desc)` btree
 - `orders(order_number)` unique btree
+- `order_address(order_id)` unique btree
+- `product_image(product_id, created_at desc)` btree
+- `coupon(code)` unique btree
+- `coupon_user(user_id, coupon_id)` unique btree
+- `coupon_user(coupon_id, created_at desc)` btree
+- `product_attributes(code)` unique btree
+- `product_attribute_values(attribute_id, slug)` unique btree
+- `product_attribute_assignments(product_id, attribute_value_id)` unique btree
 - `payments(provider_order_id)` unique btree
 - `payments(order_id, status)` btree
-- `cart_items(cart_id)` btree
 - `refresh_tokens(user_id, expires_at)` btree
 - `consents(user_id, consent_type, granted_at desc)` btree
 - `audit_events(order_id, created_at desc)` btree
 
-For search, use PostgreSQL full-text search. Create a generated `tsvector` column on `products` combining `title`, `author_name`, `description`, and `isbn13`, indexed with GIN. That is the correct first-stage search design for this scale.
+For search, use PostgreSQL full-text search. Create a generated `tsvector` column on `products` combining `title`, `author_name`, `description`, and `isbn13`, indexed with GIN. Product filtering for `level`, `theme`, `size`, and future dimensions should be resolved through the product-attribute tables rather than new columns on `products`.
 
 ### Migration Strategy
 
@@ -490,16 +625,16 @@ The API root is `/api/v1`. Representative resources:
 
 ### Versioning Strategy
 
-Use URI versioning with `/api/v1`. It is operationally simple, explicit in logs, and easy to route through Nginx location rules. Breaking changes require `/api/v2`.
+Use URI versioning with `/api/v1`. It is operationally simple, explicit in logs, and easy to route at the API boundary. Breaking changes require `/api/v2`.
 
 ### Pagination Pattern
 
-Use cursor pagination for all lists that can grow meaningfully:
+Use `limit` and `page` query parameters for list endpoints:
 
-- `GET /products?limit=24&cursor=<opaque>`
-- `GET /orders?limit=20&cursor=<opaque>`
+- `GET /products?limit=2&page=1`
+- `GET /orders?limit=20&page=3`
 
-The cursor should encode a stable sort key such as `(created_at, id)` or `(title, id)` depending on the endpoint. Offset pagination is acceptable only for low-volume internal admin views.
+`page` should be 1-based. The server computes `offset = (page - 1) * limit`. Clamp `limit` to a safe maximum per endpoint to protect the database from oversized scans.
 
 ### API Conventions
 
@@ -562,13 +697,11 @@ Role claims may be included in JWTs, but resource ownership checks must still be
 
 ### Environment Topology
 
-Three environments are still required, but the topology stays intentionally simple at the start:
+Only one named environment is required right now:
 
 - `dev`: local Docker Compose with frontend, API, worker, PostgreSQL, Redis, and MailHog
-- `staging`: one smaller EC2 instance running the full stack with test payment credentials
-- `prod`: one larger EC2 instance running the full stack with daily backups and monitoring
 
-Staging remains mandatory. Payment webhooks, CORS, cookie behavior, and reverse-proxy routing need an environment that behaves like production before changes are promoted.
+Production deployment still exists, but it does not require a separate tracked staging environment in this phase.
 
 ### Container and Runtime Configuration
 
@@ -585,16 +718,16 @@ Docker Compose services:
 
 #### AWS
 
-Single-host production baseline:
-- EC2 instance family: `t4g.large` for staging, `t4g.xlarge` for production
+Production baseline:
+- Frontend hosting: S3 bucket for the static export fronted by CloudFront
+- Backend host: single EC2 instance, right-sized for the initial workload
 - OS: Ubuntu Server 24.04 LTS
-- Runtime: Docker Engine 28.x + Docker Compose v2
-- Reverse proxy: Nginx on host network or dedicated container bound to ports 80 and 443
-- Storage: gp3 EBS volume mounted for PostgreSQL data, Redis persistence, uploaded assets, and backups
+- Runtime: Docker Engine 29.x + Docker Compose v2
+- Storage: gp3 EBS volume mounted for PostgreSQL data, Redis persistence, and backups
+
+Manual storefront publishing to S3 and CloudFront is acceptable in this phase and does not need to be tracked as an automated runtime concern in this repository.
 
 Container layout on the host:
-- `nginx`: serves static frontend output and proxies API requests
-- `frontend-build`: optional build-only container for generating static assets during release
 - `api`: Go Gin application
 - `worker`: Go background worker
 - `postgres`: PostgreSQL 18 with persistent named volume mapped to EBS-backed storage
@@ -605,7 +738,7 @@ Container layout on the host:
 
 Use encrypted `.env` files on the EC2 host for the first phase. The practical implementation is:
 
-- Store production and staging secrets as SOPS-encrypted files
+- Store production secrets as SOPS-encrypted files
 - Decrypt them only on the target EC2 host during deployment
 - Mount them into Docker Compose through `env_file` references
 - Keep JWT signing keys, database passwords, Razorpay credentials, and SMTP secrets out of the Compose YAML itself
@@ -618,13 +751,14 @@ CI/CD is currently absent, so the initial release process is manual but standard
 
 1. Build versioned Docker images for `api` and `worker`.
 2. Build the NextJS static export.
-3. Copy the release bundle or pull images onto the EC2 host.
-4. Decrypt the environment file on the target host.
-5. Run database migrations using a one-shot application container.
-6. Restart or recreate Compose services with `docker compose up -d`.
-7. Run smoke tests against the public domain and the health endpoint.
+3. Upload the static export to S3 and invalidate the relevant CloudFront paths.
+4. Copy the release bundle or pull images onto the EC2 host.
+5. Decrypt the environment file on the target host.
+6. Run database migrations using a one-shot application container.
+7. Restart or recreate Compose services with `docker compose up -d`.
+8. Run smoke tests against the storefront domain and the API health endpoint.
 
-This is acceptable only temporarily. The first follow-up should be a GitHub Actions pipeline that builds images, packages the frontend, ships artifacts to the host, and executes the deployment steps over SSH in a controlled way.
+This is acceptable only temporarily. The first follow-up should be a GitHub Actions pipeline that builds images, publishes the frontend assets, ships artifacts to the host, and executes the deployment steps in a controlled way.
 
 ## 7. Observability
 
@@ -696,7 +830,7 @@ Highest-risk threats:
 - JWT theft via XSS or bad storage practices
 - PII leakage through logs or backups
 - admin privilege escalation
-- single-host compromise affecting the entire stack
+- single-host compromise affecting the entire backend stack
 - inventory oversell under concurrent checkout
 
 ### Input Validation
@@ -710,7 +844,7 @@ Use Redis-backed rate limiting:
 - auth endpoints: per-IP and per-account throttles
 - catalog endpoints: soft per-IP limits
 - checkout/payment-initiation: strict per-user and per-IP limits
-- webhook endpoints: provider validation plus signature verification and Nginx request-size limits
+- webhook endpoints: provider validation plus signature verification and HTTP request-size limits at the API boundary
 
 ### CORS
 
@@ -746,8 +880,8 @@ To align with DPDPA:
 
 Use layered caching:
 
-- Nginx static file caching headers for HTML, JS, CSS, and images
-- browser caching for immutable fingerprinted assets
+- CloudFront and browser caching for immutable fingerprinted frontend assets
+- CloudFront caching for static storefront HTML where release behavior allows it
 - Redis for popular anonymous catalog fragments with 60 to 300 second TTLs
 - no cache for personalized order and account endpoints
 
@@ -764,14 +898,6 @@ Use `pgxpool` with explicit limits:
 
 Because the app and database live on one host, connection churn will be low. The main concern is protecting PostgreSQL from unbounded app-side pools, not network fan-out.
 
-### Web and Static Delivery
-
-Nginx should cache-control:
-
-- immutable static assets for one year
-- prerendered HTML conservatively, typically `no-cache` with ETag for simpler release behavior
-- no authenticated API responses
-
 ### Bottleneck Analysis
 
 Most likely bottlenecks:
@@ -779,7 +905,7 @@ Most likely bottlenecks:
 1. Database contention around inventory and order creation
 2. Payment provider latency
 3. Unindexed catalog search
-4. Single-host resource contention between Nginx, API, worker, PostgreSQL, and Redis
+4. Single-host resource contention between API, worker, PostgreSQL, and Redis
 5. Side effects leaking into synchronous request paths
 
 Mitigations:
@@ -794,17 +920,18 @@ Mitigations:
 
 These decisions should become ADRs in `adr/`:
 
-1. Start with a single EC2 host running the full stack in Docker Compose before splitting services.
-2. Use PostgreSQL full-text search initially instead of OpenSearch.
-3. Use Ed25519-signed JWT access tokens with rotating opaque refresh tokens and Redis-backed revocation.
-4. Use Razorpay as the primary payment provider for India-first launch.
-5. Use SQL-first persistence with `sqlc` and `goose` instead of a Go ORM.
+1. Start with a single EC2 host running the backend stack in Docker Compose before splitting services.
+2. Use S3 plus CloudFront for the static frontend instead of serving it from the backend host.
+3. Use PostgreSQL full-text search and extensible product-attribute tables initially instead of adding fixed filter columns.
+4. Use Ed25519-signed JWT access tokens with rotating opaque refresh tokens and Redis-backed revocation.
+5. Use Razorpay as the primary payment provider for India-first launch.
+6. Use SQL-first persistence with `sqlc` and `goose` instead of a Go ORM.
 
 ## Baseline Architecture Summary
 
 This is the recommended baseline:
 
-- NextJS 16 static storefront served by Nginx on EC2
+- NextJS 16 static storefront hosted on S3 and CloudFront
 - Go 1.26 + Gin API in Docker Compose on EC2
 - separate Go worker in Docker Compose on EC2
 - PostgreSQL 18 container with persistent EBS-backed storage

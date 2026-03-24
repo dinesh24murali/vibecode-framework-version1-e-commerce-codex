@@ -36,20 +36,21 @@
 
 | Env | URL | Notes |
 |-----|-----|-------|
-| Local | `http://localhost:3000` | |
-| Staging | `None` | |
-| Production | `https://cubiximprint.com/` | |
+| Dev | `http://localhost:3000` | Primary working environment via local Docker Compose |
 
 ## External Services
 
 | Service | Purpose | Docs / Credentials |
 |---------|---------|--------------------|
+| Amazon S3 | Store the static frontend export | |
+| Amazon CloudFront | Serve and cache the static frontend | |
 | *(add as integrations are built)* | | |
 
 ## Key Conventions (Quick Reference)
 
 - API contract: `docs/02_outputs/04_api_spec.yaml` is the source of truth
 - Frontend client is **generated** from the API spec — never hand-written
+- Static frontend deployments are uploaded manually to S3 and served through CloudFront in the current phase
 - All dates stored as UTC ISO 8601
 - *(add project-specific conventions here)*
 
