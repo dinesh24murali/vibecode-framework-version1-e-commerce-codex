@@ -10,6 +10,8 @@ Format: `- [YYYY-MM-DD] <task-name>: <one-line summary>`
 ## Unreleased
 
 <!-- AI: add entries here as tasks are completed -->
+- [2026-03-26] add-forgot-password-flow: docs: added 3-step forgot-password OTP flow to API spec and functional spec (UF-015, FS-006 expansion, notifications table, screen inventory)
+- [2026-03-26] add-public-filter-options-api: docs: added GET /api/v1/attributes and GET /api/v1/attributes/{attrDefId}/values public endpoints plus AttributeWithValues schema to OpenAPI spec
 - [2026-03-24] 004-correct-tech-architecture: docs: corrected the tech architecture schema, pagination, and frontend hosting model
 - [2026-03-23] 001-generate-prd: docs: added the v1 product requirements document and product scope memory
 - [2026-03-23] 002-generate-functional-spec: docs: added the functional specification and updated resolved product rules

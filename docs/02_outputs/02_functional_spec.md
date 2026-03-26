@@ -134,6 +134,18 @@ This document incorporates the resolved product clarifications provided after th
 4. Admin changes status to `Fulfilled` or `Cancelled` if allowed.
 5. System saves the change and records the acting admin for audit.
 
+### UF-015 Forgot Password
+
+1. Visitor opens `/login` and clicks the forgot password link.
+2. System routes to `/forgot-password`.
+3. User enters their registered email and submits.
+4. System sends an OTP to the email if an account exists; response is always the same regardless of whether the email is found (prevents account enumeration).
+5. User is routed to the OTP entry screen.
+6. User submits the OTP.
+7. System verifies the OTP and returns a short-lived `otp_token`; system routes the user to the password reset form.
+8. User enters and confirms the new password and submits.
+9. System resets the password, revokes all existing refresh tokens for the account, and routes the user to `/login` with a success message.
+
 ## Screen / Page Inventory
 
 | Route | Purpose | Key UI Elements | Auth |
@@ -143,7 +155,7 @@ This document incorporates the resolved product clarifications provided after th
 | `/products/?slug=<slug>` | Product detail view | Image gallery, zoom area, price, stock, metadata, add-to-cart button | Public |
 | `/cart` | Review cart | Line items, quantity controls, remove action, totals, coupon input, checkout CTA | Public |
 | `/checkout` | Confirm address, coupon, totals, and place order | Address selector, address form, coupon field, tax summary, order summary, place order CTA | Authenticated |
-| `/login` | Customer login | Email/password form, forgot password link if added later, Facebook login when enabled | Public |
+| `/login` | Customer login | Email/password form, forgot password link, Facebook login when enabled | Public |
 | `/signup` | Customer registration | Email OTP step, OTP form, password setup form, Facebook login when enabled | Public |
 | `/account` | Customer account shell | Tab navigation for profile, address, orders | Authenticated |
 | `/account/profile` or account tab | Manage user profile | First name, last name, phone, email, password controls | Authenticated |
@@ -239,19 +251,23 @@ This document incorporates the resolved product clarifications provided after th
 
 ### FS-006 Customer Authentication
 
-- Trigger / entry point: User chooses login or signup.
-- Happy path: Email signup requires OTP verification before password creation; login accepts valid credentials; Facebook login is shown only when feature flag is on.
+- Trigger / entry point: User chooses login, signup, or forgot password.
+- Happy path: Email signup requires OTP verification before password creation; login accepts valid credentials; Facebook login is shown only when feature flag is on; forgot password follows the 3-step OTP flow in UF-015.
 - Error states and messages:
   - Existing email on signup: `An account already exists for this email.`
   - Wrong or expired OTP: `Invalid or expired OTP.`
   - Invalid credentials: `Email or password is incorrect.`
+  - Password and confirm password mismatch on reset: `Passwords do not match.`
 - Edge cases:
   - OTP resend allowed after cooldown.
   - Facebook feature disabled means button is hidden, not disabled.
+  - Forgot password OTP request always returns the same response regardless of whether the email is registered (prevents account enumeration).
+  - Successful password reset revokes all existing refresh tokens for the account; user must log in again.
 - Validation rules:
   - Email must be valid format.
   - Password minimum 8 characters.
   - OTP is numeric and expires after 10 minutes.
+  - `confirm_new_password` must exactly match `new_password` on the reset form.
 
 ### FS-007 Account Management
 
@@ -376,6 +392,7 @@ stateDiagram-v2
 | Signup OTP | User requests signup verification | Customer | Email | OTP code, expiry time, support contact |
 | Signup success | Account created after OTP and password | Customer | Email | Welcome message, account confirmation, login link |
 | Email change OTP | User changes account email | New email address | Email | OTP code, expiry time, note that old email stays active until verified |
+| Password reset OTP | User submits forgot-password request | Customer | Email | OTP code, expiry time, note that if they did not request this they can safely ignore it |
 | Order confirmation | Order successfully placed | Customer | Email | Order number, items, address, tax, discount, total, next steps |
 | Order follow-up task | Order successfully placed | Internal business team | Internal process/manual queue | Customer name, phone, order number for manual phone follow-up |
 | Contact inquiry alert | Contact form submitted successfully | Business inbox | Email | Sender details and message |
