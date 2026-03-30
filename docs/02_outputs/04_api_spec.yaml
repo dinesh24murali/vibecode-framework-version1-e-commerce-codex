@@ -1167,6 +1167,52 @@ paths:
           $ref: "#/components/responses/InternalServerError"
 
   # ---------------------------------------------------------------------------
+  # Admin Image Upload
+  # ---------------------------------------------------------------------------
+
+  /api/v1/admin/upload/image/presign:
+    post:
+      tags: [admin-upload]
+      operationId: adminPresignImageUpload
+      summary: Request a presigned S3 URL to upload a product image (admin)
+      description: |
+        Returns a short-lived presigned S3 PUT URL and the final public CDN URL
+        the image will be accessible at once uploaded.
+
+        **Upload flow:**
+        1. Call this endpoint to get `presigned_url` and `public_url`.
+        2. PUT the image file directly to `presigned_url` from the client
+           (Content-Type must match the `content_type` sent in step 1).
+        3. Pass `public_url` in the `image_urls[].url` field when creating or
+           updating a product.
+
+        The presigned URL expires after 5 minutes. Re-request if it expires
+        before the upload completes.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ImagePresignRequest"
+      responses:
+        "200":
+          description: Presigned upload URL generated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImagePresignResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  # ---------------------------------------------------------------------------
   # Admin Products
   # ---------------------------------------------------------------------------
 
@@ -3184,6 +3230,8 @@ components:
         Request body to create a new product.
         Attributes (level, theme, size, etc.) are managed separately via
         POST /api/v1/admin/products/{id}/attributes after creation.
+        Images must be uploaded first via POST /api/v1/admin/upload/image/presign;
+        use the returned `public_url` values in the `image_urls` array.
       properties:
         name:
           type: string
@@ -3251,6 +3299,51 @@ components:
             alt_text: "Front cover"
             sort_order: 1
         is_active: true
+
+    ImagePresignRequest:
+      type: object
+      description: Request body to obtain a presigned S3 URL for a product image upload.
+      properties:
+        filename:
+          type: string
+          description: Original filename including extension (e.g. front-cover.jpg)
+          example: "mandala-journal-front.jpg"
+        content_type:
+          type: string
+          description: MIME type of the image being uploaded
+          enum: [image/jpeg, image/png, image/webp]
+          example: "image/jpeg"
+        file_size_bytes:
+          type: integer
+          description: Size of the file in bytes; must not exceed 5 242 880 (5 MB)
+          minimum: 1
+          maximum: 5242880
+          example: 204800
+      required: [filename, content_type, file_size_bytes]
+
+    ImagePresignResponse:
+      type: object
+      description: |
+        Presigned S3 upload URL and the final public CDN URL.
+        Use `presigned_url` to PUT the image directly from the client to S3.
+        Use `public_url` in `image_urls[].url` when creating or updating a product.
+      properties:
+        presigned_url:
+          type: string
+          format: uri
+          description: Short-lived presigned S3 PUT URL; expires at `expires_at`
+          example: "https://media-bucket.s3.ap-south-1.amazonaws.com/products/uuid.jpg?X-Amz-Signature=..."
+        public_url:
+          type: string
+          format: uri
+          description: Final CDN URL the image will be accessible at after a successful upload
+          example: "https://media.cdn.example.com/products/uuid.jpg"
+        expires_at:
+          type: string
+          format: date-time
+          description: UTC timestamp when the presigned URL expires (5 minutes from issuance)
+          example: "2026-03-30T12:05:00Z"
+      required: [presigned_url, public_url, expires_at]
 
     UpdateProductRequest:
       type: object
@@ -3891,10 +3984,6 @@ components:
           type: number
           format: float
           description: subtotal minus coupon_discount; the base on which GST is calculated
-        gst_rate:
-          type: number
-          format: float
-          description: GST rate applied (always 18%)
         gst_amount:
           type: number
           format: float
@@ -3910,7 +3999,6 @@ components:
         - subtotal
         - coupon_discount
         - taxable_amount
-        - gst_rate
         - gst_amount
         - total
         - address
@@ -3920,7 +4008,6 @@ components:
         coupon_code: "SAVE50"
         coupon_discount: 50.00
         taxable_amount: 848.20
-        gst_rate: 18.0
         gst_amount: 152.68
         total: 1000.88
         address:
@@ -4046,10 +4133,6 @@ components:
           type: number
           format: float
           description: subtotal minus coupon_discount
-        gst_rate:
-          type: number
-          format: float
-          description: GST rate applied (18%)
         gst_amount:
           type: number
           format: float
@@ -4075,7 +4158,6 @@ components:
         - subtotal
         - coupon_discount
         - taxable_amount
-        - gst_rate
         - gst_amount
         - total
         - created_at
@@ -4111,7 +4193,6 @@ components:
         coupon_code: "SAVE50"
         coupon_discount: 50.00
         taxable_amount: 848.20
-        gst_rate: 18.0
         gst_amount: 152.68
         total: 1000.88
         created_at: "2026-03-20T16:00:00Z"
