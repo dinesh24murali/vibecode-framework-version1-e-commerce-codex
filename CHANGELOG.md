@@ -10,6 +10,7 @@ Format: `- [YYYY-MM-DD] <task-name>: <one-line summary>`
 ## Unreleased
 
 <!-- AI: add entries here as tasks are completed -->
+- [2026-03-31] task-002-backend-scaffold-go-gin: chore: Go 1.26/Gin backend scaffold with health endpoint, config validation, Builder/Adapter patterns, and internal package layout
 - [2026-03-31] task-001-monorepo-scaffold-local-dev: chore: added docker-compose.yml, .env.example, backend/frontend Dockerfiles, and updated Makefile with all dev targets
 - [2026-03-26] add-forgot-password-flow: docs: added 3-step forgot-password OTP flow to API spec and functional spec (UF-015, FS-006 expansion, notifications table, screen inventory)
 - [2026-03-26] add-public-filter-options-api: docs: added GET /api/v1/attributes and GET /api/v1/attributes/{attrDefId}/values public endpoints plus AttributeWithValues schema to OpenAPI spec

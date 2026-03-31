@@ -1,6 +1,6 @@
 # Task: TASK-002 — Backend scaffold — Go 1.26 / Gin
 
-**Status:** active
+**Status:** done
 **Created:** 2026-03-31
 **ADR refs:** ADR needed — Go backend package layout and design-pattern conventions
 

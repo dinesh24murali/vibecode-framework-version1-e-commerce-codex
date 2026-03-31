@@ -1,0 +1,50 @@
+# golangci-lint configuration for the e-commerce backend.
+# Run with: golangci-lint run
+# All linters target Go 1.23+ (the locally installed toolchain).
+# See https://golangci-lint.run/usage/configuration/ for full reference.
+
+run:
+  timeout: 5m
+  # Analyse all packages including test files.
+  tests: true
+
+linters:
+  # Disable all linters by default and enable only the ones listed below.
+  # This keeps the config explicit and avoids surprise failures when new
+  # linters are added to golangci-lint releases.
+  disable-all: true
+  enable:
+    - govet        # Reports suspicious constructs caught by go vet.
+    - errcheck     # Ensures errors are not silently discarded.
+    - staticcheck  # Comprehensive static analysis (SA*, S1*, etc.).
+    - unused       # Reports unexported identifiers that are never used.
+    - misspell     # Catches common English misspellings in comments/strings.
+    - goimports    # Enforces import grouping: stdlib, then third-party.
+    - gosimple     # Suggests simpler code constructs (subset of staticcheck).
+    - ineffassign  # Detects assignments whose results are never used.
+    - typecheck    # Runs the Go type-checker — failures here are build errors.
+
+linters-settings:
+  goimports:
+    # Separate internal module imports from third-party imports.
+    local-prefixes: github.com/dinesh24murali/vibecode-framework-version1-e-commerce-codex
+
+  errcheck:
+    # Check type-asserted errors in assignments (e.g. v, _ = x.(T)).
+    check-type-assertions: true
+    # Also check blank assignments: _ = someFunc().
+    check-blank: false
+
+  govet:
+    enable-all: true
+
+issues:
+  # Show all issues, not just the first 3 per linter.
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+  exclude-rules:
+    # Test files may use unexported helpers without triggering unused warnings.
+    - path: "_test\\.go"
+      linters:
+        - unused
