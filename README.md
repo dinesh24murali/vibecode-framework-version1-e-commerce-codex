@@ -1,66 +1,86 @@
-# e-commerce-site — Vibecode Framework
+# e-commerce-site
 
-> A provider-agnostic vibe-coding framework. Works with Claude Code, Cursor, Codex, Gemini, or any AI tool.
+A books-focused e-commerce platform for selling books online.
+
+**Stack:** Go 1.26 / Gin · NextJS 16 SSG · PostgreSQL 18 · Redis 7.2 · JWT (Ed25519) · shadcn/ui · AWS
 
 ---
 
-## Quick Start
+## Prerequisites
+
+- Docker Engine 29.x + Docker Compose v2
+- Go 1.26+
+- Node.js 22.x + npm
+- `sqlc` v1.30.x (`go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest`)
+- `golangci-lint` (`go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest`)
+
+---
+
+## Local Development Setup
 
 ```bash
-# 1. Clone this template
-git clone <this-repo> my-project
-cd my-project
+# 1. Clone the repository
+git clone https://github.com/dinesh24murali/vibecode-framework-version1-e-commerce-codex
+cd vibecode-framework-version1-e-commerce-codex
 
-# 2. Find-and-replace all placeholders
-#    e-commerce-site, Go, NextJS 16 Static Site Generation, etc.
-#    See AGENTS.md §6 for the full placeholder list
+# 2. Copy environment file and fill in values
+cp .env.example .env
+# Edit .env — at minimum set JWT_PRIVATE_KEY, JWT_PUBLIC_KEY
 
-# 3. Scaffold directories
-make scaffold
+# 3. Start all local services (Postgres, Redis, MailHog, api, worker, frontend)
+docker compose up
 
-# 4. Fill in the intake questionnaire
-open docs/00_intake/intake_questionnaire.md
+# 4. Run database migrations
+make migrate-up
+
+# 5. (Optional) Seed development data
+make seed
+```
+
+### Running without Docker
+
+```bash
+# Terminal 1: start backend + frontend dev servers concurrently
+make dev
+
+# Or individually:
+cd backend && go run ./cmd/api      # API on :8080
+cd frontend && npm run dev          # Frontend on :3000
 ```
 
 ---
 
-## Two-Phase Workflow
+## Makefile Targets
 
-### Phase 1 — Generate Your Documents (do this before writing code)
+| Command | Description |
+|---------|-------------|
+| `make dev` | Start backend and frontend dev servers concurrently |
+| `make build` | Build all Docker images |
+| `make test` | Run backend unit and integration tests |
+| `make verify` | Run e2e + DOM verification checks |
+| `make migrate-up` | Apply all pending database migrations |
+| `make migrate-down` | Roll back the most recent migration |
+| `make migrate-status` | Show current migration state |
+| `make seed` | Seed the database with development fixture data |
+| `make sqlc-gen` | Regenerate Go database code from SQL files |
+| `make codegen` | Regenerate frontend TypeScript API client from OpenAPI spec |
+| `make adr SLUG=my-decision` | Create a new Architecture Decision Record |
+| `make task NAME=my-feature` | Create a new task file from the template |
+| `make check-env` | Validate `.env` has all required variables |
+| `make help` | Show all available commands |
 
-Work through `docs/01_prompts/` in order. For each file:
-1. Open the `.prompt.md` file
-2. Fill in the `[[PLACEHOLDER]]` tokens from your intake questionnaire
-3. Paste the entire prompt into your AI tool of choice
-4. Save the output to `docs/02_outputs/` (e.g. `docs/02_outputs/01_prd.md`)
+---
 
-| Prompt | Output |
-|--------|--------|
-| `01_prd.prompt.md` | Product Requirements Document |
-| `02_functional_spec.prompt.md` | Functional Specifications |
-| `03_tech_architecture.prompt.md` | Technical Architecture |
-| `04_api_spec.prompt.md` | OpenAPI 3.1 Spec |
-| `05_implementation_plan.prompt.md` | Phased Implementation Plan |
-| `06_dev_setup.prompt.md` | Developer Setup Guide |
+## Local Service URLs
 
-After generating docs:
-- Review and adjust outputs
-- Create your first ADRs from architectural decisions: `make adr SLUG=initial-stack`
-- Seed memory files from the architecture doc: `memory/<domain>.md`
-
-### Phase 2 — Build Features (the living project loop)
-
-For every feature or bugfix:
-
-```
-1. make task NAME=my-feature
-2. Ask AI: "Write the scratch file for tasks/active/my-feature.md"
-3. Review the scratch file — adjust if needed
-4. Tell AI to implement
-5. AI updates CHANGELOG.md and memory files
-6. make verify   (for frontend changes)
-7. AI moves task to tasks/done/
-```
+| Service | URL |
+|---------|-----|
+| Frontend (storefront) | http://localhost:3000 |
+| Backend API | http://localhost:8080 |
+| API health check | http://localhost:8080/health |
+| MailHog (email UI) | http://localhost:8025 |
+| PostgreSQL | localhost:5432 |
+| Redis | localhost:6379 |
 
 ---
 
@@ -68,12 +88,28 @@ For every feature or bugfix:
 
 ```
 .
+├── backend/                # Go 1.26 API + worker
+│   ├── cmd/api/            # API binary entry point
+│   ├── cmd/worker/         # Worker binary entry point
+│   ├── cmd/migrate/        # Migration runner entry point
+│   ├── internal/           # Application code (handlers, services, repositories)
+│   ├── migrations/         # goose SQL migration files
+│   └── db/
+│       ├── queries/        # Raw .sql query files (consumed by sqlc)
+│       └── sqlc/           # sqlc-generated Go code (do not hand-edit)
+├── frontend/               # NextJS 16 SSG storefront
+│   ├── app/                # App Router pages and layouts
+│   ├── components/         # Reusable UI components
+│   ├── lib/
+│   │   ├── api/            # Generated API client (from OpenAPI spec)
+│   │   └── store/          # Zustand v5 state slices
+│   └── public/
 ├── docs/
-│   ├── 00_intake/          # Fill this first
-│   ├── 01_prompts/         # Paste into any AI tool
-│   └── 02_outputs/         # AI-generated docs land here
+│   ├── 00_intake/          # Project intake questionnaire
+│   ├── 01_prompts/         # AI prompt templates
+│   └── 02_outputs/         # AI-generated documents (PRD, arch, API spec, etc.)
 ├── adr/                    # Architecture Decision Records
-├── memory/                 # AI memory / domain knowledge
+├── memory/                 # AI agent memory files (domain knowledge)
 ├── tasks/
 │   ├── active/             # In-progress tasks + scratch files
 │   └── done/               # Completed tasks
@@ -81,44 +117,27 @@ For every feature or bugfix:
 │   ├── e2e/                # Playwright end-to-end tests
 │   └── contract/           # OpenAPI contract tests
 ├── verify/                 # Verification scripts and playbooks
-├── backend/                # Backend source code
-├── frontend/               # Frontend source code
-├── AGENTS.md               # Master AI instructions (all tools read this)
-├── CLAUDE.md               # Redirects to AGENTS.md
-└── .cursorrules            # Redirects to AGENTS.md
+└── AGENTS.md               # Master AI instructions
 ```
 
 ---
 
-## AI Tool Setup
+## AI Agent Instructions
 
-This framework is **provider-agnostic**. The master instructions live in `AGENTS.md`.
+All AI tool instructions are in `AGENTS.md`. `CLAUDE.md` and `.cursorrules` both redirect there.
 
-| Tool | Config file | Action |
-|------|-------------|--------|
-| Claude Code | `CLAUDE.md` | Redirects to `AGENTS.md` |
-| Cursor | `.cursorrules` | Redirects to `AGENTS.md` |
-| Codex / GPT | — | Paste `AGENTS.md` content as system prompt |
-| Gemini | — | Paste `AGENTS.md` content as system prompt |
+For AI-assisted development, follow the two-phase workflow in `AGENTS.md`:
+1. **Before coding:** create `tasks/active/<task-name>.scratch.md` with a plan
+2. **After coding:** update `CHANGELOG.md`, move task to `tasks/done/`, update `memory/`
 
 ---
 
-## Makefile Commands
+## Production
 
-```bash
-make scaffold   # Create directories (run once)
-make verify     # Run e2e + DOM checks
-make adr SLUG=my-decision   # Create a new ADR
-make task NAME=my-feature   # Create a new task file
-make help       # Show all commands
-```
+Production runs on a single AWS EC2 instance with Docker Compose. See `docs/02_outputs/03_tech_architecture.md` for the full architecture.
 
----
-
-## Philosophy
-
-- **Docs first, code second** — AI-generated documents become the spec; code follows
-- **Scratch files before code** — AI must plan before implementing
-- **CHANGELOG discipline** — every task leaves a trail
-- **Provider-agnostic** — prompts are plain markdown; paste anywhere
-- **Living memory** — domain knowledge is captured in `memory/`, not lost between sessions
+- Frontend: S3 + CloudFront (static export)
+- Backend: EC2 running Docker Compose (api, worker, postgres, redis)
+- Payments: Razorpay
+- Email: Amazon SES
+- Secrets: SOPS-encrypted `.env` files + AWS SSM Parameter Store

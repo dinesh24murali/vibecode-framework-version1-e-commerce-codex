@@ -1,4 +1,64 @@
-.PHONY: scaffold verify adr task check-env init help
+.PHONY: dev build test seed migrate migrate-up migrate-down migrate-status \
+        sqlc-gen codegen verify adr task scaffold check-env init help
+
+# ─── Local Development ────────────────────────────────────────────────────────
+
+## dev: Start backend and frontend dev servers concurrently
+dev:
+	@echo "Starting backend and frontend dev servers..."
+	@trap 'kill 0' INT; \
+	  (cd backend && go run ./cmd/api) & \
+	  (cd frontend && npm run dev) & \
+	  wait
+
+## build: Build all Docker images via Docker Compose
+build:
+	docker compose build
+
+# ─── Testing ─────────────────────────────────────────────────────────────────
+
+## test: Run all backend unit and integration tests
+test:
+	cd backend && go test ./...
+
+## verify: Run all verification checks (e2e + DOM)
+verify:
+	@echo "Running verification..."
+	@bash verify/scripts/run-e2e.sh
+	@npx ts-node verify/scripts/check-dom.ts
+
+# ─── Database ─────────────────────────────────────────────────────────────────
+
+## migrate: Alias for migrate-up
+migrate: migrate-up
+
+## migrate-up: Apply all pending database migrations
+migrate-up:
+	cd backend && go run ./cmd/migrate up
+
+## migrate-down: Roll back the most recent database migration
+migrate-down:
+	cd backend && go run ./cmd/migrate down
+
+## migrate-status: Show current migration state
+migrate-status:
+	cd backend && go run ./cmd/migrate status
+
+## seed: Seed the database with development fixture data
+seed:
+	cd backend && go run ./cmd/seed
+
+## sqlc-gen: Regenerate Go database code from SQL query files
+sqlc-gen:
+	cd backend && sqlc generate
+
+# ─── Code Generation ──────────────────────────────────────────────────────────
+
+## codegen: Regenerate the frontend TypeScript API client from the OpenAPI spec
+codegen:
+	cd frontend && npx orval --config orval.config.ts
+
+# ─── Project Scaffolding ──────────────────────────────────────────────────────
 
 ## scaffold: Create the initial project structure (run once after cloning)
 scaffold:
@@ -9,12 +69,6 @@ scaffold:
 	@mkdir -p verify/scripts
 	@mkdir -p backend frontend
 	@echo "Done. Next: fill in docs/00_intake/intake_questionnaire.md"
-
-## verify: Run all verification checks (e2e + DOM)
-verify:
-	@echo "Running verification..."
-	@bash verify/scripts/run-e2e.sh
-	@npx ts-node verify/scripts/check-dom.ts
 
 ## adr: Create a new ADR (usage: make adr SLUG=my-decision)
 adr:

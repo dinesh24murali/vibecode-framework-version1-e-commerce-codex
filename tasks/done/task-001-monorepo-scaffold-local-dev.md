@@ -1,6 +1,6 @@
 # Task: TASK-001 — Monorepo scaffold & local dev environment
 
-**Status:** active
+**Status:** done
 **Created:** 2026-03-31
 **ADR refs:** none
 
