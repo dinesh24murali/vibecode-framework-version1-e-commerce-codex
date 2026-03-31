@@ -17,9 +17,9 @@ You are a senior DevOps engineer and developer advocate. Generate a **complete d
 **Frontend:** NextJS 16 Static Site Generation
 **Database:** Postgres
 **Auth strategy:** JWT
-**Containerized:** [[Fill from intake 6.2]]
-**CI/CD:** [[Fill from intake 6.3]]
-**Environments:** [[Fill from intake 6.4]]
+**Containerized:** Yes — Docker Compose
+**CI/CD:** none
+**Environments:** dev
 
 ---
 
