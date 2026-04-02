@@ -10,6 +10,8 @@ Format: `- [YYYY-MM-DD] <task-name>: <one-line summary>`
 ## Unreleased
 
 <!-- AI: add entries here as tasks are completed -->
+- [2026-04-01] task-004-database-redis-setup-migrations: chore: pgxpool (MaxConns:20), goose migrations with embed, go-redis/v9, sqlc.yaml, migrate CLI, ADR-0004, memory/infra.md
+- [2026-03-31] task-003-frontend-scaffold-nextjs: chore: NextJS 16.2.1 static export scaffold with App Router, Tailwind, shadcn/ui Button, Zustand v5 SSG-safe store, four route-group shell layouts, and ADR-0003
 - [2026-03-31] task-002-backend-scaffold-go-gin: chore: Go 1.26/Gin backend scaffold with health endpoint, config validation, Builder/Adapter patterns, and internal package layout
 - [2026-03-31] task-001-monorepo-scaffold-local-dev: chore: added docker-compose.yml, .env.example, backend/frontend Dockerfiles, and updated Makefile with all dev targets
 - [2026-03-26] add-forgot-password-flow: docs: added 3-step forgot-password OTP flow to API spec and functional spec (UF-015, FS-006 expansion, notifications table, screen inventory)

@@ -1,5 +1,4 @@
-// Package db manages database connection lifecycle for the API.
-// PostgreSQL connection pooling via pgx is wired here in TASK-004.
-// Redis client construction is also wired here.
-// This package is intentionally empty in TASK-002 (the scaffold task).
+// Package db manages the PostgreSQL connection pool (pgxpool) and migration
+// tooling (goose) for the API. Use Open to obtain a pool and RunUp/RunDown
+// for migration operations.
 package db

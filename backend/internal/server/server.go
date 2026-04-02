@@ -9,6 +9,9 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/redis/go-redis/v9"
+
 	"github.com/dinesh24murali/vibecode-framework-version1-e-commerce-codex/backend/internal/config"
 )
 
@@ -26,6 +29,8 @@ type ServerBuilder struct {
 	readTimeout  time.Duration
 	writeTimeout time.Duration
 	idleTimeout  time.Duration
+	pool         *pgxpool.Pool
+	redis        *redis.Client
 }
 
 // NewServerBuilder returns a ServerBuilder populated with defaults.
@@ -53,6 +58,18 @@ func (b *ServerBuilder) WithWriteTimeout(d time.Duration) *ServerBuilder {
 // WithIdleTimeout overrides the HTTP server idle (keep-alive) timeout.
 func (b *ServerBuilder) WithIdleTimeout(d time.Duration) *ServerBuilder {
 	b.idleTimeout = d
+	return b
+}
+
+// WithPool sets the PostgreSQL connection pool for handler injection.
+func (b *ServerBuilder) WithPool(pool *pgxpool.Pool) *ServerBuilder {
+	b.pool = pool
+	return b
+}
+
+// WithRedis sets the Redis client for handler injection.
+func (b *ServerBuilder) WithRedis(client *redis.Client) *ServerBuilder {
+	b.redis = client
 	return b
 }
 
