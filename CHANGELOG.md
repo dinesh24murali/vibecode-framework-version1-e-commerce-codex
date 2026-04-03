@@ -10,6 +10,7 @@ Format: `- [YYYY-MM-DD] <task-name>: <one-line summary>`
 ## Unreleased
 
 <!-- AI: add entries here as tasks are completed -->
+- [2026-04-03] task-005-database-schema-full-migrations: chore: 20 goose migrations for full production schema (users, products, cart, orders, payments, coupons, consents, audit, addresses, contact_queries); 20 sqlc query files generated; Makefile auto-loads .env; Docker ports remapped (postgres 5433, redis 6380)
 - [2026-04-01] task-004-database-redis-setup-migrations: chore: pgxpool (MaxConns:20), goose migrations with embed, go-redis/v9, sqlc.yaml, migrate CLI, ADR-0004, memory/infra.md
 - [2026-03-31] task-003-frontend-scaffold-nextjs: chore: NextJS 16.2.1 static export scaffold with App Router, Tailwind, shadcn/ui Button, Zustand v5 SSG-safe store, four route-group shell layouts, and ADR-0003
 - [2026-03-31] task-002-backend-scaffold-go-gin: chore: Go 1.26/Gin backend scaffold with health endpoint, config validation, Builder/Adapter patterns, and internal package layout

@@ -1,6 +1,12 @@
 .PHONY: dev build test seed migrate migrate-up migrate-down migrate-status \
         sqlc-gen codegen verify adr task scaffold check-env init help
 
+# Load .env if present so DATABASE_URL and friends are available to migrate targets.
+ifneq (,$(wildcard .env))
+  include .env
+  export
+endif
+
 # ─── Local Development ────────────────────────────────────────────────────────
 
 ## dev: Start backend and frontend dev servers concurrently

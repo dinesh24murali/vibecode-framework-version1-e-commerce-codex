@@ -1,4 +1,10 @@
-.PHONY: run build test lint migrate-up migrate-down migrate-status sqlc-gen
+.PHONY: run build test lint migrate-up migrate-down migrate-status sqlc-gen sqlc-notgen
+
+# Load .env from repo root if it exists and DATABASE_URL is not already set.
+ifneq (,$(wildcard ../.env))
+  include ../.env
+  export
+endif
 
 # run starts the API server using go run. Requires all env vars to be set.
 run:
