@@ -8,6 +8,7 @@
 | `memory/project.md` | project | Stack, single `dev` environment, and S3 plus CloudFront frontend hosting notes |
 | `memory/product.md` | product | Storefront scope, product schema rules, cart and order-address behavior, coupon tracking, and extensible product attributes |
 | `memory/infra.md` | infra | pgxpool limits, Redis AOF, migration workflow, sqlc codegen, local dev ports |
+| `memory/auth.md` | auth | JWT (Ed25519), token lifetimes, Argon2id params, cookie settings, refresh token rotation, OTP delivery |
 
 ---
 

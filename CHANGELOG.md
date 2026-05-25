@@ -10,6 +10,7 @@ Format: `- [YYYY-MM-DD] <task-name>: <one-line summary>`
 ## Unreleased
 
 <!-- AI: add entries here as tasks are completed -->
+- [2026-04-03] task-006-jwt-auth-system-backend: feat: full auth pipeline — Ed25519 JWT, Argon2id passwords, OTP flows (register + password-reset), Facebook OAuth, rotating refresh tokens, AuthMiddleware, 10 endpoints wired, ADR-0005, memory/auth.md, contract tests
 - [2026-04-03] task-005-database-schema-full-migrations: chore: 20 goose migrations for full production schema (users, products, cart, orders, payments, coupons, consents, audit, addresses, contact_queries); 20 sqlc query files generated; Makefile auto-loads .env; Docker ports remapped (postgres 5433, redis 6380)
 - [2026-04-01] task-004-database-redis-setup-migrations: chore: pgxpool (MaxConns:20), goose migrations with embed, go-redis/v9, sqlc.yaml, migrate CLI, ADR-0004, memory/infra.md
 - [2026-03-31] task-003-frontend-scaffold-nextjs: chore: NextJS 16.2.1 static export scaffold with App Router, Tailwind, shadcn/ui Button, Zustand v5 SSG-safe store, four route-group shell layouts, and ADR-0003

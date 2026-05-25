@@ -77,7 +77,11 @@ func (b *ServerBuilder) WithRedis(client *redis.Client) *ServerBuilder {
 // The Gin router is built here so that all routes and middleware are
 // registered before the server starts accepting connections.
 func (b *ServerBuilder) Build() *http.Server {
-	router := newRouter(b.cfg.CORSAllowedOrigins)
+	router := newRouter(RouterDeps{
+		Config: b.cfg,
+		Pool:   b.pool,
+		Redis:  b.redis,
+	})
 
 	return &http.Server{
 		Addr:         b.cfg.Addr(),

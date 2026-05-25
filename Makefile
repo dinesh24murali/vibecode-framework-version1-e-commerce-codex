@@ -1,5 +1,5 @@
 .PHONY: dev build test seed migrate migrate-up migrate-down migrate-status \
-        sqlc-gen codegen verify adr task scaffold check-env init help
+        sqlc-gen codegen verify adr task scaffold check-env init help server-dev
 
 # Load .env if present so DATABASE_URL and friends are available to migrate targets.
 ifneq (,$(wildcard .env))
@@ -20,6 +20,9 @@ dev:
 ## build: Build all Docker images via Docker Compose
 build:
 	docker compose build
+
+server-dev:
+	cd backend && go run ./cmd/api
 
 # ─── Testing ─────────────────────────────────────────────────────────────────
 

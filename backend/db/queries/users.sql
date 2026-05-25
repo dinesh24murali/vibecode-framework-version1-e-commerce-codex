@@ -19,6 +19,12 @@ SET full_name  = $2,
 WHERE id = $1 AND deleted_at IS NULL
 RETURNING *;
 
+-- name: UpdatePasswordHash :exec
+UPDATE users
+SET password_hash = $2,
+    updated_at    = now()
+WHERE id = $1 AND deleted_at IS NULL;
+
 -- name: SoftDeleteUser :exec
 UPDATE users
 SET deleted_at = now(),
