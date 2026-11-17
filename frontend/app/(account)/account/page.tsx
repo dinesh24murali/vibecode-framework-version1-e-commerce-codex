@@ -17,6 +17,13 @@ export default function AccountPage() {
   const accessToken = useStore((s) => s.accessToken)
   const [tab, setTab] = useState<(typeof tabs)[number]['id']>('profile')
 
+  // ?tab=orders deep-links to a tab (read after mount: the page is statically exported).
+  useEffect(() => {
+    const wanted = new URLSearchParams(window.location.search).get('tab')
+    const match = tabs.find((t) => t.id === wanted)
+    if (match) setTab(match.id)
+  }, [])
+
   // Access tokens live in memory only (memory/auth.md): no token means not signed in.
   useEffect(() => {
     if (!accessToken) router.replace('/login/?redirect=/account/')

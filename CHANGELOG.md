@@ -9,6 +9,8 @@ Format: `- [YYYY-MM-DD] <task-name>: <one-line summary>`
 
 ## Unreleased
 
+- [2026-11-17] task-024-checkout-page: feat: /checkout page (login and empty-cart guards, address selector, coupon validation on blur with live totals, place order) and ?tab= deep links on the account page
+
 - [2026-11-17] task-039-razorpay-payment-backend: feat: POST /payments/initiate (Idempotency-Key, Redis-cached response) and HMAC-verified POST /payments/webhooks/razorpay (captured: order paid + stock deducted + confirmation job; failed: payment_failed); spec and generated client extended; ADR-0006
 
 - [2026-11-17] task-023-checkout-api: feat: POST /checkout/calculate, /checkout/coupons/validate, /checkout/orders (OrderBuilder, 18% GST after coupon, flat+percentage coupons once per user, atomic stock reservation in one transaction); migration adds orders.coupon_code and coupon_discount_inr

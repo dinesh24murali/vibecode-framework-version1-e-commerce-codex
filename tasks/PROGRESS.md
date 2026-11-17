@@ -24,7 +24,7 @@ Order: 000, 008, 007, 040, 009 ... 038. Status: todo/done/blocked.
 | 022 | done | Tokens are memory-only so a reload shows the login prompt; server cart persists. Checkout link targets /checkout/ (TASK-024+). |
 | 023 | done | Spec wins over plan: unknown coupon on validate is 200 is_valid=false (no 404). Stock is reserved (reserved += qty) at order time; TASK-039 deducts on payment. No seeded coupons until TASK-030. |
 | 039 | done | Payment endpoints were missing from the spec: added them (ADR-0006) and regenerated the client. Failed payments keep stock reserved until the stock_release job exists. Razorpay API not called for real. |
-| 024 | todo | |
+| 024 | done | Razorpay Checkout JS is not wired: Place Order creates the pending order and goes to /account/?tab=orders; paying needs a later task using POST /payments/initiate. |
 | 025 | todo | |
 | 026 | todo | |
 | 027 | todo | |
