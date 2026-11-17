@@ -16,7 +16,7 @@ Order: 000, 008, 007, 040, 009 ... 038. Status: todo/done/blocked.
 | 014 | done | Product link target pages and slide admin come later; slides need seed (030). |
 | 015 | done | Card links to product detail await TASK-016. |
 | 016 | done | Slug->id resolved via list API (spec has only GET by id); fallback slug sample-product when API down at build. |
-| 017 | todo | |
+| 017 | done | Uses category slug + q params (matching TASK-015). Destination pages come in 018-020. |
 | 018 | todo | |
 | 019 | todo | |
 | 020 | todo | |

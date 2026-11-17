@@ -9,6 +9,7 @@ Format: `- [YYYY-MM-DD] <task-name>: <one-line summary>`
 
 ## Unreleased
 
+- [2026-11-17] task-017-navbar-mega-menus: feat: shop navbar with Book Store and Printing Services mega-menus, search, cart badge and mobile accordion drawer
 - [2026-11-17] task-016-product-detail-page: feat: /products/[slug] SSG page with image gallery, hover/pinch zoom, Add to Cart toast and per-product metadata
 - [2026-11-17] task-015-product-list-page: feat: /products page with filter sidebar, search, sort, pagination, URL-synced filterSlice and mobile filter toggle
 - [2026-11-17] task-014-landing-page: feat: GET /landing, carousel_slides table, static landing page with embla hero carousel and product grid (build-time data with client fallback)
