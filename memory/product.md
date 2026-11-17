@@ -78,3 +78,7 @@
 ## Footer (TASK-018)
 
 - `components/layout/Footer` is mounted in the (shop) layout. Social URLs come from `NEXT_PUBLIC_FACEBOOK_URL`, `NEXT_PUBLIC_INSTAGRAM_URL`, `NEXT_PUBLIC_WHATSAPP_URL` via `lib/constants/social.ts` (reuse on the contact page).
+
+## Contact (TASK-020)
+
+- `POST /api/v1/contact` returns 200 + MessageResponse (spec), requires name/email/subject/message, optional phone (422 on bad email/phone, 400 on missing fields). Enquiry stored in `contact_queries`; email goes to `CONTACT_NOTIFY_EMAIL` over `SMTP_HOST:SMTP_PORT` when set, failures are only logged. Page address comes from `NEXT_PUBLIC_BUSINESS_ADDRESS`.

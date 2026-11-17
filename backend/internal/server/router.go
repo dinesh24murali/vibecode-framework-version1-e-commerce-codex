@@ -75,6 +75,22 @@ func newRouter(deps RouterDeps) *gin.Engine {
 	}
 	uploadHandler := handlers.NewUploadHandler(storage)
 
+	var contactNotifier services.ContactNotifier
+	if deps.Config.ContactNotifyEmail != "" && deps.Config.SMTPHost != "" {
+		port := deps.Config.SMTPPort
+		if port == "" {
+			port = "25"
+		}
+		from := deps.Config.SMTPFrom
+		if from == "" {
+			from = "noreply@localhost"
+		}
+		contactNotifier = services.SMTPContactNotifier{
+			Addr: deps.Config.SMTPHost + ":" + port, From: from, To: deps.Config.ContactNotifyEmail,
+		}
+	}
+	contactHandler := handlers.NewContactHandler(services.NewContactService(repositories.NewContactRepository(deps.Pool), contactNotifier))
+
 	v1 := r.Group("/api/v1")
 
 	// Public catalogue routes — no middleware.
@@ -85,6 +101,7 @@ func newRouter(deps RouterDeps) *gin.Engine {
 	v1.GET("/products/:id", productHandler.Get)
 	v1.GET("/categories", categoryHandler.List)
 	v1.GET("/categories/:id", categoryHandler.Get)
+	v1.POST("/contact", contactHandler.Submit)
 
 	// Public auth routes — no middleware.
 	authGroup := v1.Group("/auth")

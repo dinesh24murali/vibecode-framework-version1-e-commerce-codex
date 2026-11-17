@@ -19,7 +19,7 @@ Order: 000, 008, 007, 040, 009 ... 038. Status: todo/done/blocked.
 | 017 | done | Uses category slug + q params (matching TASK-015). Destination pages come in 018-020. |
 | 018 | done | Social URLs env-configured (NEXT_PUBLIC_*_URL); links to terms/about 404 until 019. |
 | 019 | done | Placeholder content; legal copy is boilerplate needing counsel review. |
-| 020 | todo | |
+| 020 | done | Spec wins: 200 + subject field. Address and notify email env-configured; no rate limiting yet. |
 | 021 | todo | |
 | 022 | todo | |
 | 023 | todo | |

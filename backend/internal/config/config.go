@@ -35,6 +35,13 @@ type Config struct {
 	S3Region   string
 	CDNBaseURL string
 
+	// SMTPHost/SMTPPort/SMTPFrom and ContactNotifyEmail configure the contact-form
+	// notification email. Optional: without ContactNotifyEmail no email is sent.
+	SMTPHost           string
+	SMTPPort           string
+	SMTPFrom           string
+	ContactNotifyEmail string
+
 	// CORSAllowedOrigins is a comma-separated list of exact allowed origins.
 	// Wildcards are not permitted per architecture constraints.
 	CORSAllowedOrigins []string
@@ -73,6 +80,11 @@ func (a *EnvAdapter) Load() *Config {
 		S3Bucket:      os.Getenv("S3_BUCKET"),
 		S3Region:      os.Getenv("AWS_REGION"),
 		CDNBaseURL:    os.Getenv("CDN_BASE_URL"),
+
+		SMTPHost:           os.Getenv("SMTP_HOST"),
+		SMTPPort:           os.Getenv("SMTP_PORT"),
+		SMTPFrom:           os.Getenv("SMTP_FROM"),
+		ContactNotifyEmail: os.Getenv("CONTACT_NOTIFY_EMAIL"),
 	}
 
 	corsRaw := get("CORS_ALLOWED_ORIGINS")
