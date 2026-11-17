@@ -12,6 +12,7 @@ import type {
   AttributeDefinition,
   AttributeDefinitionValue,
   BadRequestResponse,
+  ConflictResponse,
   CreateAttributeDefinitionRequest,
   CreateAttributeDefinitionValueRequest,
   ForbiddenResponse,
@@ -124,6 +125,11 @@ export type adminCreateAttributeDefinitionResponse403 = {
   status: 403
 }
 
+export type adminCreateAttributeDefinitionResponse409 = {
+  data: ConflictResponse
+  status: 409
+}
+
 export type adminCreateAttributeDefinitionResponse422 = {
   data: UnprocessableEntityResponse
   status: 422
@@ -137,7 +143,7 @@ export type adminCreateAttributeDefinitionResponse500 = {
 export type adminCreateAttributeDefinitionResponseSuccess = (adminCreateAttributeDefinitionResponse201) & {
   headers: Headers;
 };
-export type adminCreateAttributeDefinitionResponseError = (adminCreateAttributeDefinitionResponse400 | adminCreateAttributeDefinitionResponse401 | adminCreateAttributeDefinitionResponse403 | adminCreateAttributeDefinitionResponse422 | adminCreateAttributeDefinitionResponse500) & {
+export type adminCreateAttributeDefinitionResponseError = (adminCreateAttributeDefinitionResponse400 | adminCreateAttributeDefinitionResponse401 | adminCreateAttributeDefinitionResponse403 | adminCreateAttributeDefinitionResponse409 | adminCreateAttributeDefinitionResponse422 | adminCreateAttributeDefinitionResponse500) & {
   headers: Headers;
 };
 
@@ -248,6 +254,11 @@ export type adminUpdateAttributeDefinitionResponse404 = {
   status: 404
 }
 
+export type adminUpdateAttributeDefinitionResponse409 = {
+  data: ConflictResponse
+  status: 409
+}
+
 export type adminUpdateAttributeDefinitionResponse422 = {
   data: UnprocessableEntityResponse
   status: 422
@@ -261,7 +272,7 @@ export type adminUpdateAttributeDefinitionResponse500 = {
 export type adminUpdateAttributeDefinitionResponseSuccess = (adminUpdateAttributeDefinitionResponse200) & {
   headers: Headers;
 };
-export type adminUpdateAttributeDefinitionResponseError = (adminUpdateAttributeDefinitionResponse400 | adminUpdateAttributeDefinitionResponse401 | adminUpdateAttributeDefinitionResponse403 | adminUpdateAttributeDefinitionResponse404 | adminUpdateAttributeDefinitionResponse422 | adminUpdateAttributeDefinitionResponse500) & {
+export type adminUpdateAttributeDefinitionResponseError = (adminUpdateAttributeDefinitionResponse400 | adminUpdateAttributeDefinitionResponse401 | adminUpdateAttributeDefinitionResponse403 | adminUpdateAttributeDefinitionResponse404 | adminUpdateAttributeDefinitionResponse409 | adminUpdateAttributeDefinitionResponse422 | adminUpdateAttributeDefinitionResponse500) & {
   headers: Headers;
 };
 
@@ -431,6 +442,11 @@ export type adminCreateAttributeValueResponse404 = {
   status: 404
 }
 
+export type adminCreateAttributeValueResponse409 = {
+  data: ConflictResponse
+  status: 409
+}
+
 export type adminCreateAttributeValueResponse422 = {
   data: UnprocessableEntityResponse
   status: 422
@@ -444,7 +460,7 @@ export type adminCreateAttributeValueResponse500 = {
 export type adminCreateAttributeValueResponseSuccess = (adminCreateAttributeValueResponse201) & {
   headers: Headers;
 };
-export type adminCreateAttributeValueResponseError = (adminCreateAttributeValueResponse400 | adminCreateAttributeValueResponse401 | adminCreateAttributeValueResponse403 | adminCreateAttributeValueResponse404 | adminCreateAttributeValueResponse422 | adminCreateAttributeValueResponse500) & {
+export type adminCreateAttributeValueResponseError = (adminCreateAttributeValueResponse400 | adminCreateAttributeValueResponse401 | adminCreateAttributeValueResponse403 | adminCreateAttributeValueResponse404 | adminCreateAttributeValueResponse409 | adminCreateAttributeValueResponse422 | adminCreateAttributeValueResponse500) & {
   headers: Headers;
 };
 
@@ -499,6 +515,11 @@ export type adminUpdateAttributeValueResponse404 = {
   status: 404
 }
 
+export type adminUpdateAttributeValueResponse409 = {
+  data: ConflictResponse
+  status: 409
+}
+
 export type adminUpdateAttributeValueResponse422 = {
   data: UnprocessableEntityResponse
   status: 422
@@ -512,7 +533,7 @@ export type adminUpdateAttributeValueResponse500 = {
 export type adminUpdateAttributeValueResponseSuccess = (adminUpdateAttributeValueResponse200) & {
   headers: Headers;
 };
-export type adminUpdateAttributeValueResponseError = (adminUpdateAttributeValueResponse400 | adminUpdateAttributeValueResponse401 | adminUpdateAttributeValueResponse403 | adminUpdateAttributeValueResponse404 | adminUpdateAttributeValueResponse422 | adminUpdateAttributeValueResponse500) & {
+export type adminUpdateAttributeValueResponseError = (adminUpdateAttributeValueResponse400 | adminUpdateAttributeValueResponse401 | adminUpdateAttributeValueResponse403 | adminUpdateAttributeValueResponse404 | adminUpdateAttributeValueResponse409 | adminUpdateAttributeValueResponse422 | adminUpdateAttributeValueResponse500) & {
   headers: Headers;
 };
 
@@ -564,6 +585,11 @@ export type adminDeleteAttributeValueResponse404 = {
   status: 404
 }
 
+export type adminDeleteAttributeValueResponse409 = {
+  data: ConflictResponse
+  status: 409
+}
+
 export type adminDeleteAttributeValueResponse500 = {
   data: InternalServerErrorResponse
   status: 500
@@ -572,7 +598,7 @@ export type adminDeleteAttributeValueResponse500 = {
 export type adminDeleteAttributeValueResponseSuccess = (adminDeleteAttributeValueResponse204) & {
   headers: Headers;
 };
-export type adminDeleteAttributeValueResponseError = (adminDeleteAttributeValueResponse401 | adminDeleteAttributeValueResponse403 | adminDeleteAttributeValueResponse404 | adminDeleteAttributeValueResponse500) & {
+export type adminDeleteAttributeValueResponseError = (adminDeleteAttributeValueResponse401 | adminDeleteAttributeValueResponse403 | adminDeleteAttributeValueResponse404 | adminDeleteAttributeValueResponse409 | adminDeleteAttributeValueResponse500) & {
   headers: Headers;
 };
 
@@ -588,7 +614,7 @@ export const getAdminDeleteAttributeValueUrl = (attrDefId: string,
 }
 
 /**
- * Also removes all PRODUCT_ATTRIBUTE_ASSIGNMENTS that reference this value.
+ * Returns 409 Conflict when the value is still assigned to one or more products (unassign it first).
  * @summary Delete an allowed value from an attribute dimension (admin)
  */
 export const adminDeleteAttributeValue = async (attrDefId: string,

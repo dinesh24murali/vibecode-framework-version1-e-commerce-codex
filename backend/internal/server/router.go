@@ -139,6 +139,17 @@ func newRouter(deps RouterDeps) *gin.Engine {
 	admin := v1.Group("/admin", auth.AdminMiddleware(jwtSvc))
 	admin.POST("/upload/image/presign", uploadHandler.Presign)
 
+	adminAttr := handlers.NewAdminAttributeHandler(services.NewAttributeAdminService(repositories.NewAttributeAdminRepository(deps.Pool)))
+	admin.GET("/attributes", adminAttr.ListDefinitions)
+	admin.POST("/attributes", adminAttr.CreateDefinition)
+	admin.GET("/attributes/:attrDefId", adminAttr.GetDefinition)
+	admin.PUT("/attributes/:attrDefId", adminAttr.UpdateDefinition)
+	admin.DELETE("/attributes/:attrDefId", adminAttr.DeleteDefinition)
+	admin.GET("/attributes/:attrDefId/values", adminAttr.ListValues)
+	admin.POST("/attributes/:attrDefId/values", adminAttr.CreateValue)
+	admin.PUT("/attributes/:attrDefId/values/:valueId", adminAttr.UpdateValue)
+	admin.DELETE("/attributes/:attrDefId/values/:valueId", adminAttr.DeleteValue)
+
 	// Protected auth route — requires valid access token.
 	// Razorpay calls this without a JWT; the HMAC signature is the authentication.
 	v1.POST("/payments/webhooks/razorpay", paymentHandler.Webhook)

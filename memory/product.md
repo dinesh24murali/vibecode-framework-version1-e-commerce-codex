@@ -97,3 +97,9 @@ Order lifecycle: pending_payment -> (webhook payment.captured) paid, or payment_
 
 ## Checkout page (TASK-024)
 /checkout/ guards: no token -> /login/?redirect=/checkout/; empty server cart -> /cart/. Coupon is validated on blur and only applied (sent to calculate/place) when valid. Place Order leaves the order pending_payment and routes to /account/?tab=orders; Razorpay Checkout JS is not wired yet.
+
+## Admin attributes (TASK-026)
+
+- `/api/v1/admin/attributes[...]` CRUD (9 endpoints) via `AttributeAdminService`. Codes must match `^[a-z0-9]+(_[a-z0-9]+)*$` and are immutable; value slugs are auto-generated from the label.
+- Deleting a value assigned to any product returns 409; deleting a definition cascades to its values and assignments. Duplicate code/slug returns 409; invalid input 422.
+- Admin UI: `/admin/attributes/` (modals, no `[id]` route), reached via the dashboard link (admin session is memory-only, so use client-side navigation).

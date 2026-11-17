@@ -8,6 +8,7 @@ Format: `- [YYYY-MM-DD] <task-name>: <one-line summary>`
 ---
 
 ## Unreleased
+- [2026-11-17] task-026-admin-attributes-crud: feature: admin attribute definition/value CRUD API (409 when a value is in use) and modal admin page
 - [2026-11-17] task-025-admin-auth: feature: AdminMiddleware, POST /admin/auth/login, guarded admin area with login page
 
 - [2026-11-17] task-024-checkout-page: feat: /checkout page (login and empty-cart guards, address selector, coupon validation on blur with live totals, place order) and ?tab= deep links on the account page

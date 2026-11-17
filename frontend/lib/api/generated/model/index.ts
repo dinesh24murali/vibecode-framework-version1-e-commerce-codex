@@ -36,6 +36,7 @@ export * from './categorySlug';
 export * from './changePasswordRequest';
 export * from './checkoutSummary';
 export * from './confirmEmailChangeRequest';
+export * from './conflictResponse';
 export * from './contactQueryRequest';
 export * from './couponValidationResponse';
 export * from './couponValidationResponseDiscountType';
