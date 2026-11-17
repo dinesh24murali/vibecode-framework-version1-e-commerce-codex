@@ -8,6 +8,10 @@ RUN npm ci
 
 COPY . .
 
+# NEXT_PUBLIC_* vars are inlined at build time
+ARG NEXT_PUBLIC_API_URL=http://localhost:8080
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
 # Build static export
 RUN npm run build
 
@@ -23,4 +27,5 @@ COPY --from=builder /app/out ./out
 
 EXPOSE 3000
 
-CMD ["serve", "-s", "out", "-l", "3000"]
+# No -s: a Next static export has one HTML file per route; SPA fallback would serve the home page everywhere
+CMD ["serve", "out", "-l", "3000"]
