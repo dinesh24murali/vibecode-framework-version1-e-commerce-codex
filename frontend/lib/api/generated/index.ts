@@ -13,4 +13,5 @@ export * from './checkout/checkout';
 export * from './contact/contact';
 export * from './landing/landing';
 export * from './orders/orders';
+export * from './payments/payments';
 export * from './products/products';

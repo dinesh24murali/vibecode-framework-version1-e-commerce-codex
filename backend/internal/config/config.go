@@ -42,6 +42,12 @@ type Config struct {
 	SMTPFrom           string
 	ContactNotifyEmail string
 
+	// Razorpay credentials. Optional: without RazorpayKeyID and RazorpayKeySecret
+	// POST /payments/initiate answers 503; without RazorpayWebhookSecret every webhook is rejected.
+	RazorpayKeyID         string
+	RazorpayKeySecret     string
+	RazorpayWebhookSecret string
+
 	// CORSAllowedOrigins is a comma-separated list of exact allowed origins.
 	// Wildcards are not permitted per architecture constraints.
 	CORSAllowedOrigins []string
@@ -85,6 +91,10 @@ func (a *EnvAdapter) Load() *Config {
 		SMTPPort:           os.Getenv("SMTP_PORT"),
 		SMTPFrom:           os.Getenv("SMTP_FROM"),
 		ContactNotifyEmail: os.Getenv("CONTACT_NOTIFY_EMAIL"),
+
+		RazorpayKeyID:         os.Getenv("RAZORPAY_KEY_ID"),
+		RazorpayKeySecret:     os.Getenv("RAZORPAY_KEY_SECRET"),
+		RazorpayWebhookSecret: os.Getenv("RAZORPAY_WEBHOOK_SECRET"),
 	}
 
 	corsRaw := get("CORS_ALLOWED_ORIGINS")

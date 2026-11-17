@@ -91,3 +91,6 @@ Cart rows are per (user, product). Cart.id is the user id. Totals use the curren
 
 ## Checkout API (TASK-023)
 Pricing: subtotal (server-discounted cart) minus coupon = taxable; GST 18% on taxable; total = taxable + GST. Orders persist coupon_code/coupon_discount_inr; tax_inr holds GST. Coupons: flat (INR off) or percentage, capped at subtotal, one redemption per user (coupon_users). Order placement runs in one transaction and reserves stock with a conditional UPDATE (no oversell); status starts pending_payment. validate returns 200 with is_valid=false for unusable codes.
+
+## Payments (TASK-039, ADR-0006)
+Order lifecycle: pending_payment -> (webhook payment.captured) paid, or payment_failed. Capture deducts on_hand and reserved; failure keeps the reservation. Webhook is public and authenticated only by X-Razorpay-Signature. initiate needs an Idempotency-Key header (8-128 chars). Env: RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET, RAZORPAY_WEBHOOK_SECRET.

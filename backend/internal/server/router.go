@@ -13,6 +13,7 @@ import (
 	"github.com/dinesh24murali/vibecode-framework-version1-e-commerce-codex/backend/internal/handlers"
 	"github.com/dinesh24murali/vibecode-framework-version1-e-commerce-codex/backend/internal/repositories"
 	"github.com/dinesh24murali/vibecode-framework-version1-e-commerce-codex/backend/internal/services"
+	"github.com/dinesh24murali/vibecode-framework-version1-e-commerce-codex/backend/internal/worker"
 )
 
 // RouterDeps holds all infrastructure dependencies needed to wire handlers.
@@ -67,6 +68,13 @@ func newRouter(deps RouterDeps) *gin.Engine {
 	checkoutHandler := handlers.NewCheckoutHandler(services.NewCheckoutService(
 		services.NewCartService(repositories.NewCartRepository(deps.Pool), productSvc),
 		services.NewCouponService(repositories.NewCouponRepository(deps.Pool)), addrRepo, repositories.NewCheckoutRepository(deps.Pool)))
+	var gateway services.PaymentGateway
+	if deps.Config.RazorpayKeyID != "" && deps.Config.RazorpayKeySecret != "" {
+		gateway = services.NewRazorpayGateway(deps.Config.RazorpayKeyID, deps.Config.RazorpayKeySecret)
+	}
+	paymentHandler := handlers.NewPaymentHandler(services.NewPaymentService(
+		gateway, orderRepo, repositories.NewPaymentRepository(deps.Pool),
+		services.NewRedisIdempotencyStore(deps.Redis), worker.NewQueue(deps.Redis), deps.Config.RazorpayWebhookSecret))
 	landingHandler := handlers.NewLandingHandler(services.NewLandingService(repositories.NewCarouselRepository(deps.Pool), productSvc))
 
 	var storage services.StorageService = services.DisabledStorage{}
@@ -126,6 +134,9 @@ func newRouter(deps RouterDeps) *gin.Engine {
 	}
 
 	// Protected auth route — requires valid access token.
+	// Razorpay calls this without a JWT; the HMAC signature is the authentication.
+	v1.POST("/payments/webhooks/razorpay", paymentHandler.Webhook)
+
 	protected := v1.Group("", auth.Middleware(jwtSvc))
 	{
 		protected.POST("/auth/logout", authHandler.Logout)
@@ -153,6 +164,7 @@ func newRouter(deps RouterDeps) *gin.Engine {
 		protected.POST("/checkout/calculate", checkoutHandler.Calculate)
 		protected.POST("/checkout/coupons/validate", checkoutHandler.ValidateCoupon)
 		protected.POST("/checkout/orders", checkoutHandler.PlaceOrder)
+		protected.POST("/payments/initiate", paymentHandler.Initiate)
 
 		protected.GET("/orders", accountHandler.ListOrders)
 		protected.GET("/orders/:id", accountHandler.GetOrder)

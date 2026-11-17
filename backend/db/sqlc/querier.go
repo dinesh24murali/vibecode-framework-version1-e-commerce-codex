@@ -67,6 +67,7 @@ type Querier interface {
 	GetOrderByID(ctx context.Context, id uuid.UUID) (Order, error)
 	GetOrderByNumber(ctx context.Context, orderNumber string) (Order, error)
 	GetPaymentByProviderOrderID(ctx context.Context, providerOrderID string) (Payment, error)
+	GetPaymentForUpdate(ctx context.Context, providerOrderID string) (Payment, error)
 	GetPaymentsByOrder(ctx context.Context, orderID uuid.UUID) ([]Payment, error)
 	GetProductByID(ctx context.Context, id uuid.UUID) (GetProductByIDRow, error)
 	GetProductBySlug(ctx context.Context, slug string) (GetProductBySlugRow, error)

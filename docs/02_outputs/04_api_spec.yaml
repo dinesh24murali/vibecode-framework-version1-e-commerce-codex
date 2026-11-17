@@ -26,6 +26,8 @@ tags:
     description: Customer shopping cart (protected)
   - name: checkout
     description: Checkout flow — calculate, coupon, place order (protected)
+  - name: payments
+    description: Razorpay payment initiation (protected) and gateway webhook (signature-verified)
   - name: orders
     description: Customer order history and management (protected)
   - name: account
@@ -767,6 +769,89 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "422":
           $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  # ---------------------------------------------------------------------------
+  # Payments
+  # ---------------------------------------------------------------------------
+
+  /api/v1/payments/initiate:
+    post:
+      tags: [payments]
+      operationId: initiatePayment
+      summary: Create a Razorpay order for a pending order
+      description: Replaying the same Idempotency-Key returns the original response without creating another Razorpay order.
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InitiatePaymentRequest"
+      responses:
+        "200":
+          description: Razorpay order created; pass the values to Razorpay Checkout
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentInitiation"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: Order is not awaiting payment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        "503":
+          description: Payments are not configured on this server
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/payments/webhooks/razorpay:
+    post:
+      tags: [payments]
+      operationId: razorpayWebhook
+      summary: Razorpay webhook receiver
+      description: Verifies X-Razorpay-Signature (HMAC-SHA256 of the raw body). Handles payment.captured and payment.failed; other events are acknowledged and ignored.
+      security: []
+      parameters:
+        - name: X-Razorpay-Signature
+          in: header
+          required: true
+          description: Hex HMAC-SHA256 of the raw request body using the webhook secret
+          schema:
+            type: string
+            description: Hex-encoded signature
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Razorpay event envelope (passed through untouched)
+              additionalProperties: true
+      responses:
+        "200":
+          description: Event accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "500":
           $ref: "#/components/responses/InternalServerError"
 
@@ -2038,6 +2123,18 @@ components:
         description: UUID of the attribute value (PRODUCT_ATTRIBUTE_VALUES row)
       description: Attribute value UUID
       example: "db0e8400-e29b-41d4-a716-446655440021"
+
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: Client-generated unique key (for example a UUID) making the request safe to retry
+      schema:
+        type: string
+        minLength: 8
+        maxLength: 128
+        description: Unique idempotency key
+      example: "5f0c1d52-6c8e-4a43-9d57-0c3a1e0d9f11"
 
     PathItemId:
       name: itemId
@@ -4040,6 +4137,50 @@ components:
       example:
         address_id: "9e6b8c2d-1f4a-4e7d-b3c5-0a8f2d6e4b9c"
         coupon_code: "SAVE50"
+
+    # ------------------------------------------------------------------
+    # Payments
+    # ------------------------------------------------------------------
+
+    InitiatePaymentRequest:
+      type: object
+      description: Request body to start payment for an order
+      properties:
+        order_id:
+          type: string
+          format: uuid
+          description: UUID of the order awaiting payment
+      required: [order_id]
+      example:
+        order_id: "9e6b8c2d-1f4a-4e7d-b3c5-0a8f2d6e4b9c"
+
+    PaymentInitiation:
+      type: object
+      description: Values the frontend passes to Razorpay Checkout
+      properties:
+        order_id:
+          type: string
+          format: uuid
+          description: Our order id
+        razorpay_order_id:
+          type: string
+          description: Razorpay order id (order_xxx)
+        key_id:
+          type: string
+          description: Public Razorpay key id for Checkout
+        amount:
+          type: integer
+          description: Amount in the smallest currency unit (paise)
+        currency:
+          type: string
+          description: ISO currency code, INR
+      required: [order_id, razorpay_order_id, key_id, amount, currency]
+      example:
+        order_id: "9e6b8c2d-1f4a-4e7d-b3c5-0a8f2d6e4b9c"
+        razorpay_order_id: "order_Nx1234567890"
+        key_id: "rzp_test_abc123"
+        amount: 88500
+        currency: "INR"
 
     # ------------------------------------------------------------------
     # Orders

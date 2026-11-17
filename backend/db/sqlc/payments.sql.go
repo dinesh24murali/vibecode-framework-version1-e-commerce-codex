@@ -76,6 +76,30 @@ func (q *Queries) GetPaymentByProviderOrderID(ctx context.Context, providerOrder
 	return i, err
 }
 
+const getPaymentForUpdate = `-- name: GetPaymentForUpdate :one
+SELECT id, order_id, provider, provider_order_id, provider_payment_id, status, amount_inr, gateway_payload, created_at, updated_at FROM payments
+WHERE provider_order_id = $1
+FOR UPDATE
+`
+
+func (q *Queries) GetPaymentForUpdate(ctx context.Context, providerOrderID string) (Payment, error) {
+	row := q.db.QueryRowContext(ctx, getPaymentForUpdate, providerOrderID)
+	var i Payment
+	err := row.Scan(
+		&i.ID,
+		&i.OrderID,
+		&i.Provider,
+		&i.ProviderOrderID,
+		&i.ProviderPaymentID,
+		&i.Status,
+		&i.AmountInr,
+		&i.GatewayPayload,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getPaymentsByOrder = `-- name: GetPaymentsByOrder :many
 SELECT id, order_id, provider, provider_order_id, provider_payment_id, status, amount_inr, gateway_payload, created_at, updated_at FROM payments
 WHERE order_id = $1

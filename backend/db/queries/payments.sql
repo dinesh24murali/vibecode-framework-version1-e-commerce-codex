@@ -20,3 +20,8 @@ SET status              = $2,
     updated_at          = now()
 WHERE id = $1
 RETURNING *;
+
+-- name: GetPaymentForUpdate :one
+SELECT * FROM payments
+WHERE provider_order_id = $1
+FOR UPDATE;
