@@ -69,7 +69,8 @@ services:
       dockerfile: Dockerfile.worker
     restart: unless-stopped
     env_file:
-      - .env
+      - path: .env
+        required: false
     environment:
       DATABASE_URL: postgres://postgres:postgres@postgres:5432/ecommerce?sslmode=disable
       REDIS_URL: redis://redis:6379/0

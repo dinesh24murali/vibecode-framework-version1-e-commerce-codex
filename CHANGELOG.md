@@ -9,6 +9,7 @@ Format: `- [YYYY-MM-DD] <task-name>: <one-line summary>`
 
 ## Unreleased
 
+- [2026-11-17] task-040-background-worker-scaffold: feat: cmd/worker Redis Streams consumer (XREADGROUP, XACK, exponential backoff, dead-letter, idempotency keys), handler registry with Phase 2 stubs, worker compose service
 - [2026-11-17] task-007-openapi-client-codegen-frontend: feat: orval-generated API client (lib/api/generated), base client with Bearer injection, cart slice wired to generated cart API, no-raw-fetch check in make verify
 - [2026-11-17] task-008-zustand-store-auth-cart-slices: feat: Zustand auth + cart slices, SSG-safe persist (user profile only), useHydrateStore, injectable CartApi for syncWithServer
 - [2026-11-17] task-000-docker-toolchain: chore: Docker-only toolchain (docker-compose.tools.yml, containerised Makefile targets and verify scripts), Postgres 18 volume fix, lint cleanup

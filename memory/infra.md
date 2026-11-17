@@ -56,3 +56,10 @@
 - Postgres 18 volume is `postgres18_data` mounted at `/var/lib/postgresql` (the old `postgres_data` volume is unused).
 - `make` is not installed on the Windows host; run the raw `docker compose -f docker-compose.yml -f docker-compose.tools.yml run --rm <svc> <cmd>` form with `MSYS_NO_PATHCONV=1`.
 - Frontend static export is served by the `static` busybox service at http://static:3000; Playwright deps install to /opt/tools in the e2e container.
+
+## Background Worker (TASK-040)
+
+- Binary `backend/cmd/worker`; reads `DATABASE_URL`/`REDIS_URL` only (no JWT keys needed); exits non-zero if either is unreachable.
+- Stream `jobs`, consumer group `workers`, dead-letter stream `jobs:dead-letter`. Job fields: `id`, `type`, `payload`, `attempts`.
+- Failure: retry up to 3 times (backoff 1s doubling, cap 60s), then dead-letter. Stale pending entries reclaimed with XAUTOCLAIM (1 min idle).
+- Idempotency: Redis key `job:done:<id>` (7d TTL) skips replays. Register handlers via `worker.Dispatcher.Register`; Phase 2 stubs live in `internal/worker/handlers/stubs.go`.

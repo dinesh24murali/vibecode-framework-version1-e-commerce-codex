@@ -7,7 +7,7 @@ Order: 000, 008, 007, 040, 009 ... 038. Status: todo/done/blocked.
 | 000 | done | make is not installed on host; run the docker compose equivalents (see AGENTS.md). Fixed 4 lint issues, removed debug prints. |
 | 008 | done | CartApi adapter injected; TASK-007 wires generated client. |
 | 007 | done | orval, generated client committed. |
-| 040 | todo | |
+| 040 | done | |
 | 009 | todo | |
 | 010 | todo | |
 | 011 | todo | |

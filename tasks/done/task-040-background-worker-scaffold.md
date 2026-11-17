@@ -1,6 +1,6 @@
 # Task: TASK-040 — Background worker scaffold
 
-**Status:** active
+**Status:** done
 **Created:** 2026-03-31
 **ADR refs:** none
 
@@ -18,14 +18,14 @@ See `docs/02_outputs/03_tech_architecture.md` §2 (Background Worker), §2 (Queu
 
 ## Acceptance Criteria
 
-- [ ] `go build ./cmd/worker` succeeds with zero errors
-- [ ] Worker connects to Redis and Postgres on startup; exits non-zero if either is unreachable
-- [ ] Worker consumes from a Redis Stream using `XREADGROUP` and dispatches to registered handlers by job type
-- [ ] Failed jobs are requeued with exponential backoff; after 3 retries the job moves to a dead-letter stream
-- [ ] Successful jobs are acknowledged with `XACK`
-- [ ] Worker runs as a separate `worker` service in `docker-compose.yml`
-- [ ] `golangci-lint run` passes
-- [ ] Job handler interface is defined so Phase 2 handlers (`order_confirmation_email`, `payment_reconciliation`, `stock_release`, `audit_fan_out`) can be registered without modifying dispatcher core
+- [x] `go build ./cmd/worker` succeeds with zero errors
+- [x] Worker connects to Redis and Postgres on startup; exits non-zero if either is unreachable
+- [x] Worker consumes from a Redis Stream using `XREADGROUP` and dispatches to registered handlers by job type
+- [x] Failed jobs are requeued with exponential backoff; after 3 retries the job moves to a dead-letter stream
+- [x] Successful jobs are acknowledged with `XACK`
+- [x] Worker runs as a separate `worker` service in `docker-compose.yml`
+- [x] `golangci-lint run` passes
+- [x] Job handler interface is defined so Phase 2 handlers (`order_confirmation_email`, `payment_reconciliation`, `stock_release`, `audit_fan_out`) can be registered without modifying dispatcher core
 
 ## Dependencies
 
