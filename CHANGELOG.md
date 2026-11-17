@@ -9,6 +9,7 @@ Format: `- [YYYY-MM-DD] <task-name>: <one-line summary>`
 
 ## Unreleased
 
+- [2026-11-17] task-015-product-list-page: feat: /products page with filter sidebar, search, sort, pagination, URL-synced filterSlice and mobile filter toggle
 - [2026-11-17] task-014-landing-page: feat: GET /landing, carousel_slides table, static landing page with embla hero carousel and product grid (build-time data with client fallback)
 - [2026-11-17] task-013-s3-presigned-urls: feat: admin image presign endpoint (S3 adapter, role middleware, env config, 503 when unconfigured)
 - [2026-11-17] task-012-product-category-public-api: feat: public GET /products (filters, search, sort, pagination, filter facets), /products/{id}, /categories, /categories/{id}; migration for spec columns; real-DB filter tests

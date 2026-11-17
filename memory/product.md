@@ -62,3 +62,7 @@
 
 - `GET /api/v1/landing`: `carousel_slides` (table `carousel_slides`, active only, max 5, ordered by sort_order) and `featured_products` (8 most recent active products; no featured flag exists).
 - Frontend `app/(shop)/page.tsx` fetches the payload at build time; if the API is unreachable then, `LandingContent` fetches it on mount. Empty slides show a fallback banner; no products shows "Products are temporarily unavailable."
+
+## Product list page (TASK-015)
+
+- `/products/` URL params: repeated `category` (slugs), repeated `attr` (attribute value UUIDs), `q`, `sort` (omitted when newest), `page` (omitted when 1). `filterSlice` in the root store mirrors them; `useProductFilterUrlSync` keeps URL and store in sync and gates rendering until hydrated. Filters are not persisted.
