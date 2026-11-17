@@ -8,7 +8,7 @@ Order: 000, 008, 007, 040, 009 ... 038. Status: todo/done/blocked.
 | 008 | done | CartApi adapter injected; TASK-007 wires generated client. |
 | 007 | done | orval, generated client committed. |
 | 040 | done | |
-| 009 | todo | |
+| 009 | done | e2e mocks API; Facebook popup not e2e-tested. |
 | 010 | todo | |
 | 011 | todo | |
 | 012 | todo | |

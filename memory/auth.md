@@ -63,3 +63,10 @@
 - Access/refresh tokens are in-memory only; `partialize` persists only `user`. Cart is never persisted.
 - `skipHydration: true` + `useHydrateStore` (mounted via `StoreHydrator` in root layout) rehydrates after mount (ADR-0003).
 - `cartSlice.syncWithServer()` uses an injectable `CartApi` (`setCartApi`); TASK-007 must wire the generated client into it.
+
+## Frontend Auth Pages (TASK-009)
+
+- Routes: `/login`, `/signup`, `/signup/verify-otp` (OTP step then name+password step; email passed via `?email=`). Pages using `useSearchParams` are wrapped in Suspense (static export).
+- `?redirect=` is sanitised by `lib/auth/helpers.ts#safeRedirect` (same-origin relative paths only).
+- Facebook: loads the FB SDK script on click; needs `NEXT_PUBLIC_FACEBOOK_APP_ID`. Not covered by e2e (popup).
+- e2e (`tests/e2e/auth.spec.ts`, config `tests/e2e/playwright.config.ts`) mocks `/api/v1/auth/*` with `page.route`; the static verify stack has no API.
