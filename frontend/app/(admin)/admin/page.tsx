@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import { useStore } from '@/lib/store'
 
-// Dashboard; further admin sections arrive in TASK-028..029.
+// Dashboard; further admin sections arrive in TASK-029.
 export default function AdminHomePage() {
   const user = useStore((s) => s.adminUser)
   const logout = useStore((s) => s.adminLogout)
@@ -12,6 +12,11 @@ export default function AdminHomePage() {
       <p className="text-sm">Signed in as {user?.email}</p>
       <nav aria-label="Admin sections">
         <ul className="list-disc pl-5 text-sm">
+          <li>
+            <Link href="/admin/categories/" className="underline">
+              Categories
+            </Link>
+          </li>
           <li>
             <Link href="/admin/products/" className="underline">
               Products

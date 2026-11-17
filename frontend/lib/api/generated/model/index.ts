@@ -32,7 +32,6 @@ export * from './carouselSlide';
 export * from './cart';
 export * from './cartItem';
 export * from './category';
-export * from './categorySlug';
 export * from './changePasswordRequest';
 export * from './checkoutSummary';
 export * from './confirmEmailChangeRequest';

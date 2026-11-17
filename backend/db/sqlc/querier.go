@@ -14,7 +14,10 @@ import (
 type Querier interface {
 	// Admin product management (includes inactive products).
 	AdminCountProducts(ctx context.Context, query sql.NullString) (int64, error)
+	AdminCreateCategory(ctx context.Context, arg AdminCreateCategoryParams) (Category, error)
+	AdminDeleteCategory(ctx context.Context, id uuid.UUID) (int64, error)
 	AdminListProducts(ctx context.Context, arg AdminListProductsParams) ([]AdminListProductsRow, error)
+	AdminUpdateCategory(ctx context.Context, arg AdminUpdateCategoryParams) (Category, error)
 	AdminUpdateProduct(ctx context.Context, arg AdminUpdateProductParams) (AdminUpdateProductRow, error)
 	AssignAttributeToProduct(ctx context.Context, arg AssignAttributeToProductParams) (ProductAttributeAssignment, error)
 	AssignProductAttributeValue(ctx context.Context, arg AssignProductAttributeValueParams) error
@@ -28,7 +31,9 @@ type Querier interface {
 	//   value_ids       attribute value ids: OR within one attribute dimension, AND across dimensions
 	//   sort            price_asc | price_desc | newest | popular (popular falls back to newest until sales data exists)
 	CountCatalogProducts(ctx context.Context, arg CountCatalogProductsParams) (int64, error)
+	CountCategories(ctx context.Context) (int64, error)
 	CountOrdersByUserFiltered(ctx context.Context, arg CountOrdersByUserFilteredParams) (int64, error)
+	CountProductsInCategory(ctx context.Context, categoryID uuid.UUID) (int64, error)
 	CreateAddress(ctx context.Context, arg CreateAddressParams) (Address, error)
 	CreateAttribute(ctx context.Context, arg CreateAttributeParams) (ProductAttribute, error)
 	CreateAttributeValue(ctx context.Context, arg CreateAttributeValueParams) (ProductAttributeValue, error)
@@ -95,6 +100,7 @@ type Querier interface {
 	ListAuditEventsByOrder(ctx context.Context, orderID uuid.NullUUID) ([]AuditEvent, error)
 	ListCatalogProducts(ctx context.Context, arg ListCatalogProductsParams) ([]ListCatalogProductsRow, error)
 	ListCategories(ctx context.Context) ([]Category, error)
+	ListCategoriesPaged(ctx context.Context, arg ListCategoriesPagedParams) ([]Category, error)
 	ListContactQueries(ctx context.Context, arg ListContactQueriesParams) ([]ContactQuery, error)
 	ListCouponUsersByCoupon(ctx context.Context, couponID uuid.UUID) ([]CouponUser, error)
 	ListCoupons(ctx context.Context, arg ListCouponsParams) ([]Coupon, error)

@@ -10,6 +10,7 @@ import type {
   AdminListCategoriesParams,
   BadRequestResponse,
   Category,
+  ConflictResponse,
   CreateCategoryRequest,
   ForbiddenResponse,
   InternalServerErrorResponse,
@@ -121,6 +122,11 @@ export type adminCreateCategoryResponse403 = {
   status: 403
 }
 
+export type adminCreateCategoryResponse409 = {
+  data: ConflictResponse
+  status: 409
+}
+
 export type adminCreateCategoryResponse422 = {
   data: UnprocessableEntityResponse
   status: 422
@@ -134,7 +140,7 @@ export type adminCreateCategoryResponse500 = {
 export type adminCreateCategoryResponseSuccess = (adminCreateCategoryResponse201) & {
   headers: Headers;
 };
-export type adminCreateCategoryResponseError = (adminCreateCategoryResponse400 | adminCreateCategoryResponse401 | adminCreateCategoryResponse403 | adminCreateCategoryResponse422 | adminCreateCategoryResponse500) & {
+export type adminCreateCategoryResponseError = (adminCreateCategoryResponse400 | adminCreateCategoryResponse401 | adminCreateCategoryResponse403 | adminCreateCategoryResponse409 | adminCreateCategoryResponse422 | adminCreateCategoryResponse500) & {
   headers: Headers;
 };
 
@@ -245,6 +251,11 @@ export type adminUpdateCategoryResponse404 = {
   status: 404
 }
 
+export type adminUpdateCategoryResponse409 = {
+  data: ConflictResponse
+  status: 409
+}
+
 export type adminUpdateCategoryResponse422 = {
   data: UnprocessableEntityResponse
   status: 422
@@ -258,7 +269,7 @@ export type adminUpdateCategoryResponse500 = {
 export type adminUpdateCategoryResponseSuccess = (adminUpdateCategoryResponse200) & {
   headers: Headers;
 };
-export type adminUpdateCategoryResponseError = (adminUpdateCategoryResponse400 | adminUpdateCategoryResponse401 | adminUpdateCategoryResponse403 | adminUpdateCategoryResponse404 | adminUpdateCategoryResponse422 | adminUpdateCategoryResponse500) & {
+export type adminUpdateCategoryResponseError = (adminUpdateCategoryResponse400 | adminUpdateCategoryResponse401 | adminUpdateCategoryResponse403 | adminUpdateCategoryResponse404 | adminUpdateCategoryResponse409 | adminUpdateCategoryResponse422 | adminUpdateCategoryResponse500) & {
   headers: Headers;
 };
 
@@ -308,6 +319,11 @@ export type adminDeleteCategoryResponse404 = {
   status: 404
 }
 
+export type adminDeleteCategoryResponse409 = {
+  data: ConflictResponse
+  status: 409
+}
+
 export type adminDeleteCategoryResponse500 = {
   data: InternalServerErrorResponse
   status: 500
@@ -316,7 +332,7 @@ export type adminDeleteCategoryResponse500 = {
 export type adminDeleteCategoryResponseSuccess = (adminDeleteCategoryResponse200) & {
   headers: Headers;
 };
-export type adminDeleteCategoryResponseError = (adminDeleteCategoryResponse401 | adminDeleteCategoryResponse403 | adminDeleteCategoryResponse404 | adminDeleteCategoryResponse500) & {
+export type adminDeleteCategoryResponseError = (adminDeleteCategoryResponse401 | adminDeleteCategoryResponse403 | adminDeleteCategoryResponse404 | adminDeleteCategoryResponse409 | adminDeleteCategoryResponse500) & {
   headers: Headers;
 };
 

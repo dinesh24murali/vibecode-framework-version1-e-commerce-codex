@@ -5,7 +5,6 @@
  * REST API for e-commerce-site — a book-selling platform. Backend is Go 1.26 / Gin with Postgres.
  * OpenAPI spec version: 1.0.0
  */
-import type { CategorySlug } from './categorySlug';
 
 /**
  * A product category
@@ -16,7 +15,7 @@ export interface Category {
   /** Display name of the category */
   name: string;
   /** URL-safe identifier used in filters */
-  slug: CategorySlug;
+  slug: string;
   /**
      * Optional description of the category or null
      * @nullable

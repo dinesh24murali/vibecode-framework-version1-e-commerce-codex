@@ -8,6 +8,7 @@ Format: `- [YYYY-MM-DD] <task-name>: <one-line summary>`
 ---
 
 ## Unreleased
+- [2026-11-17] task-028-admin-category-crud: feature: admin category CRUD API (409 when products are linked) and modal categories page; Category.slug enum removed from spec
 - [2026-11-17] task-027-admin-product-crud: feature: admin product CRUD + attribute assignment API (soft delete) and products page with presigned S3 image upload
 - [2026-11-17] task-026-admin-attributes-crud: feature: admin attribute definition/value CRUD API (409 when a value is in use) and modal admin page
 - [2026-11-17] task-025-admin-auth: feature: AdminMiddleware, POST /admin/auth/login, guarded admin area with login page

@@ -28,7 +28,7 @@ Order: 000, 008, 007, 040, 009 ... 038. Status: todo/done/blocked.
 | 025 | done | Admin login returns 401 for non-admin accounts. No admin seed until TASK-030; admin session in memory (reload = re-login). |
 | 026 | done | Spec amended: value delete returns 409 if assigned (was cascade). Definition delete still cascades. sqlc regenerated with v1.31.1 (header churn). |
 | 027 | done | One category stored per product (first of category_ids); sku = slug; no attribute-assignment UI yet (API tested). Spec: 409 added to create/update. |
-| 028 | todo | |
+| 028 | done | Removed 12-value Category.slug enum from spec. Delete blocked (409) by any linked product incl. inactive. No image_url UI. |
 | 029 | todo | |
 | 041 | todo | |
 | 030 | todo | |

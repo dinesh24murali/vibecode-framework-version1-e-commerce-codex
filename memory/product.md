@@ -111,3 +111,9 @@ Order lifecycle: pending_payment -> (webhook payment.captured) paid, or payment_
 - Storage quirks: one `category_id` per product (first of `category_ids`), `sku` mirrors `slug`, `stock` = inventory `on_hand`, discount stored as INT (0 = NULL). Updating `image_urls` replaces all images; omitting it leaves them untouched.
 - Attribute assignment is idempotent (`ON CONFLICT DO NOTHING`); remove returns 404 if not assigned.
 - UI: `/admin/products/` table + `ProductFormModal` drawer (fetches by id on open, uploads images via `putToPresignedUrl` in `lib/api/client.ts`).
+
+## Admin categories (TASK-028)
+
+- `/api/v1/admin/categories[...]` (5 endpoints) via `AdminCategoryService`; slug validated `^[a-z0-9]+(-[a-z0-9]+)*$`, unique (409). The spec's 12-value `Category.slug` enum was removed so admins can add categories.
+- Delete returns 409 if any product (active or not) references the category; otherwise 200 `{message}`.
+- UI: `/admin/categories/` table with `CategoryFormModal` (slug auto-fills from name until edited).

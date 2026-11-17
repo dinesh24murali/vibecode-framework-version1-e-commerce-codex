@@ -12,6 +12,101 @@ import (
 	"github.com/google/uuid"
 )
 
+const adminCreateCategory = `-- name: AdminCreateCategory :one
+INSERT INTO categories (slug, name, image_url)
+VALUES ($1, $2, $3)
+RETURNING id, slug, name, description, created_at, image_url, updated_at
+`
+
+type AdminCreateCategoryParams struct {
+	Slug     string         `json:"slug"`
+	Name     string         `json:"name"`
+	ImageUrl sql.NullString `json:"image_url"`
+}
+
+func (q *Queries) AdminCreateCategory(ctx context.Context, arg AdminCreateCategoryParams) (Category, error) {
+	row := q.db.QueryRowContext(ctx, adminCreateCategory, arg.Slug, arg.Name, arg.ImageUrl)
+	var i Category
+	err := row.Scan(
+		&i.ID,
+		&i.Slug,
+		&i.Name,
+		&i.Description,
+		&i.CreatedAt,
+		&i.ImageUrl,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const adminDeleteCategory = `-- name: AdminDeleteCategory :execrows
+DELETE FROM categories WHERE id = $1
+`
+
+func (q *Queries) AdminDeleteCategory(ctx context.Context, id uuid.UUID) (int64, error) {
+	result, err := q.db.ExecContext(ctx, adminDeleteCategory, id)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
+const adminUpdateCategory = `-- name: AdminUpdateCategory :one
+UPDATE categories
+SET slug = $2, name = $3, image_url = $4, updated_at = now()
+WHERE id = $1
+RETURNING id, slug, name, description, created_at, image_url, updated_at
+`
+
+type AdminUpdateCategoryParams struct {
+	ID       uuid.UUID      `json:"id"`
+	Slug     string         `json:"slug"`
+	Name     string         `json:"name"`
+	ImageUrl sql.NullString `json:"image_url"`
+}
+
+func (q *Queries) AdminUpdateCategory(ctx context.Context, arg AdminUpdateCategoryParams) (Category, error) {
+	row := q.db.QueryRowContext(ctx, adminUpdateCategory,
+		arg.ID,
+		arg.Slug,
+		arg.Name,
+		arg.ImageUrl,
+	)
+	var i Category
+	err := row.Scan(
+		&i.ID,
+		&i.Slug,
+		&i.Name,
+		&i.Description,
+		&i.CreatedAt,
+		&i.ImageUrl,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const countCategories = `-- name: CountCategories :one
+SELECT count(*) FROM categories
+`
+
+func (q *Queries) CountCategories(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countCategories)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countProductsInCategory = `-- name: CountProductsInCategory :one
+SELECT count(*) FROM products WHERE category_id = $1
+`
+
+func (q *Queries) CountProductsInCategory(ctx context.Context, categoryID uuid.UUID) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countProductsInCategory, categoryID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createCategory = `-- name: CreateCategory :one
 INSERT INTO categories (slug, name, description)
 VALUES ($1, $2, $3)
@@ -86,6 +181,48 @@ ORDER BY name
 
 func (q *Queries) ListCategories(ctx context.Context) ([]Category, error) {
 	rows, err := q.db.QueryContext(ctx, listCategories)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Category
+	for rows.Next() {
+		var i Category
+		if err := rows.Scan(
+			&i.ID,
+			&i.Slug,
+			&i.Name,
+			&i.Description,
+			&i.CreatedAt,
+			&i.ImageUrl,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listCategoriesPaged = `-- name: ListCategoriesPaged :many
+SELECT id, slug, name, description, created_at, image_url, updated_at FROM categories
+ORDER BY name
+LIMIT $1 OFFSET $2
+`
+
+type ListCategoriesPagedParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) ListCategoriesPaged(ctx context.Context, arg ListCategoriesPagedParams) ([]Category, error) {
+	rows, err := q.db.QueryContext(ctx, listCategoriesPaged, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

@@ -1615,6 +1615,8 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "422":
           $ref: "#/components/responses/UnprocessableEntity"
+        "409":
+          $ref: "#/components/responses/Conflict"
         "500":
           $ref: "#/components/responses/InternalServerError"
 
@@ -1673,6 +1675,8 @@ paths:
           $ref: "#/components/responses/NotFound"
         "422":
           $ref: "#/components/responses/UnprocessableEntity"
+        "409":
+          $ref: "#/components/responses/Conflict"
         "500":
           $ref: "#/components/responses/InternalServerError"
     delete:
@@ -1696,6 +1700,8 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
         "500":
           $ref: "#/components/responses/InternalServerError"
 
@@ -2296,7 +2302,7 @@ components:
             details: null
 
     Conflict:
-      description: Conflict — duplicate code/slug, or the value is still assigned to products
+      description: Conflict — duplicate code/slug, or the resource is still in use (value assigned to products, category with products)
       content:
         application/json:
           schema:
@@ -2918,19 +2924,6 @@ components:
         slug:
           type: string
           description: URL-safe identifier used in filters
-          enum:
-            - colouring-books
-            - drawing-books
-            - journals
-            - calendars
-            - sketch-pads
-            - planners
-            - stained-art
-            - fabrii-art
-            - note-book
-            - sticker-book
-            - sticker-colouring-book
-            - activity-cards
         description:
           type: ["string", "null"]
           description: Optional description of the category or null

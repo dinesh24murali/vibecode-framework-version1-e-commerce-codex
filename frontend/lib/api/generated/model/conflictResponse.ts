@@ -8,6 +8,6 @@
 import type { ErrorResponse } from './errorResponse';
 
 /**
- * Conflict — duplicate code/slug, or the value is still assigned to products
+ * Conflict — duplicate code/slug, or the resource is still in use (value assigned to products, category with products)
  */
 export type ConflictResponse = ErrorResponse;
