@@ -22,3 +22,17 @@ WHERE user_id = $1 AND product_id = $2;
 -- name: ClearCart :exec
 DELETE FROM cart
 WHERE user_id = $1;
+
+-- name: GetCartItemByID :one
+SELECT * FROM cart
+WHERE id = $1 AND user_id = $2;
+
+-- name: UpdateCartItemQuantityByID :one
+UPDATE cart
+SET quantity = $3, updated_at = now()
+WHERE id = $1 AND user_id = $2
+RETURNING *;
+
+-- name: DeleteCartItemByID :execrows
+DELETE FROM cart
+WHERE id = $1 AND user_id = $2;

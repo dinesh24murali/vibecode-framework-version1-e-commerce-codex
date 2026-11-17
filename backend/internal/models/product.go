@@ -60,6 +60,24 @@ type Product struct { //nolint:govet // DTO field order follows the API spec
 	UpdatedAt       time.Time          `json:"updated_at"`
 }
 
+// CartItem is one cart line. UnitPrice is the current discounted price.
+type CartItem struct { //nolint:govet // DTO field order follows the API spec
+	ID        uuid.UUID      `json:"id"`
+	Product   ProductSummary `json:"product"`
+	Quantity  int32          `json:"quantity"`
+	UnitPrice float64        `json:"unit_price"`
+	LineTotal float64        `json:"line_total"`
+}
+
+// Cart is the customer cart. It has no row of its own, so ID is the user id.
+type Cart struct { //nolint:govet // DTO field order follows the API spec
+	ID        uuid.UUID  `json:"id"`
+	Items     []CartItem `json:"items"`
+	ItemCount int        `json:"item_count"`
+	Subtotal  float64    `json:"subtotal"`
+	UpdatedAt time.Time  `json:"updated_at"`
+}
+
 // FilterValue is one selectable value inside an AttributeFilterGroup.
 type FilterValue struct { //nolint:govet // DTO field order follows the API spec
 	ID        uuid.UUID `json:"id"`

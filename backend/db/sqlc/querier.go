@@ -42,6 +42,7 @@ type Querier interface {
 	DeductStock(ctx context.Context, arg DeductStockParams) (InventoryItem, error)
 	DeleteAddress(ctx context.Context, arg DeleteAddressParams) error
 	DeleteCartItem(ctx context.Context, arg DeleteCartItemParams) error
+	DeleteCartItemByID(ctx context.Context, arg DeleteCartItemByIDParams) (int64, error)
 	DeleteExpiredTokens(ctx context.Context) error
 	DeleteProductImage(ctx context.Context, id uuid.UUID) error
 	GetActiveProductByID(ctx context.Context, id uuid.UUID) (GetActiveProductByIDRow, error)
@@ -53,6 +54,7 @@ type Querier interface {
 	GetAttributesByProduct(ctx context.Context, productID uuid.UUID) ([]GetAttributesByProductRow, error)
 	GetCartByUser(ctx context.Context, userID uuid.UUID) ([]Cart, error)
 	GetCartItem(ctx context.Context, arg GetCartItemParams) (Cart, error)
+	GetCartItemByID(ctx context.Context, arg GetCartItemByIDParams) (Cart, error)
 	GetCategoryByID(ctx context.Context, id uuid.UUID) (Category, error)
 	GetCategoryBySlug(ctx context.Context, slug string) (Category, error)
 	GetConsentsByUser(ctx context.Context, userID uuid.UUID) ([]Consent, error)
@@ -102,6 +104,7 @@ type Querier interface {
 	SetDefaultAddress(ctx context.Context, arg SetDefaultAddressParams) (Address, error)
 	SoftDeleteUser(ctx context.Context, id uuid.UUID) error
 	UpdateAddress(ctx context.Context, arg UpdateAddressParams) (Address, error)
+	UpdateCartItemQuantityByID(ctx context.Context, arg UpdateCartItemQuantityByIDParams) (Cart, error)
 	UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (Category, error)
 	UpdateCoupon(ctx context.Context, arg UpdateCouponParams) (Coupon, error)
 	UpdateInventory(ctx context.Context, arg UpdateInventoryParams) (InventoryItem, error)

@@ -256,6 +256,49 @@ func summarise(rows []dbsqlc.ListCatalogProductsRow, rel *relations) []models.Pr
 	return data
 }
 
+// SummariesByIDs returns summaries of the active products among ids, keyed by id.
+// Inactive or missing products are omitted.
+func (s *ProductService) SummariesByIDs(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]models.ProductSummary, error) {
+	out := make(map[uuid.UUID]models.ProductSummary, len(ids))
+	if len(ids) == 0 {
+		return out, nil
+	}
+	rows := make([]dbsqlc.GetActiveProductByIDRow, 0, len(ids))
+	found := make([]uuid.UUID, 0, len(ids))
+	for _, id := range ids {
+		r, err := s.products.GetActive(ctx, id)
+		if err != nil {
+			if errors.Is(mapNotFound(err), ErrNotFound) {
+				continue
+			}
+			return nil, err
+		}
+		rows = append(rows, *r)
+		found = append(found, id)
+	}
+	rel, err := s.related(ctx, found)
+	if err != nil {
+		return nil, err
+	}
+	for _, r := range rows {
+		disc := float64(r.DiscountPercent.Int32)
+		p := price(r.PriceInr)
+		sum := models.ProductSummary{
+			ID: r.ID, Name: r.Title, Slug: r.Slug, Price: p, DiscountPercent: disc,
+			DiscountedPrice: round2(p * (100 - disc) / 100), Attributes: rel.attrs[r.ID],
+			Categories: rel.categoryFor(r.CategoryID), IsActive: r.IsActive,
+		}
+		if imgs := rel.images[r.ID]; len(imgs) > 0 {
+			sum.CoverImage = &imgs[0]
+		}
+		if sum.Attributes == nil {
+			sum.Attributes = []models.ProductAttribute{}
+		}
+		out[r.ID] = sum
+	}
+	return out, nil
+}
+
 // Featured returns the n most recent active products (the schema has no featured flag).
 func (s *ProductService) Featured(ctx context.Context, n int) ([]models.ProductSummary, error) {
 	rows, err := s.products.List(ctx, repositories.CatalogFilter{Sort: "newest"}, int32(n), 0) //nolint:gosec // small constant

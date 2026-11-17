@@ -36,6 +36,24 @@ func (q *Queries) DeleteCartItem(ctx context.Context, arg DeleteCartItemParams) 
 	return err
 }
 
+const deleteCartItemByID = `-- name: DeleteCartItemByID :execrows
+DELETE FROM cart
+WHERE id = $1 AND user_id = $2
+`
+
+type DeleteCartItemByIDParams struct {
+	ID     uuid.UUID `json:"id"`
+	UserID uuid.UUID `json:"user_id"`
+}
+
+func (q *Queries) DeleteCartItemByID(ctx context.Context, arg DeleteCartItemByIDParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, deleteCartItemByID, arg.ID, arg.UserID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
 const getCartByUser = `-- name: GetCartByUser :many
 SELECT id, user_id, product_id, quantity, created_at, updated_at FROM cart
 WHERE user_id = $1
@@ -84,6 +102,57 @@ type GetCartItemParams struct {
 
 func (q *Queries) GetCartItem(ctx context.Context, arg GetCartItemParams) (Cart, error) {
 	row := q.db.QueryRowContext(ctx, getCartItem, arg.UserID, arg.ProductID)
+	var i Cart
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.ProductID,
+		&i.Quantity,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getCartItemByID = `-- name: GetCartItemByID :one
+SELECT id, user_id, product_id, quantity, created_at, updated_at FROM cart
+WHERE id = $1 AND user_id = $2
+`
+
+type GetCartItemByIDParams struct {
+	ID     uuid.UUID `json:"id"`
+	UserID uuid.UUID `json:"user_id"`
+}
+
+func (q *Queries) GetCartItemByID(ctx context.Context, arg GetCartItemByIDParams) (Cart, error) {
+	row := q.db.QueryRowContext(ctx, getCartItemByID, arg.ID, arg.UserID)
+	var i Cart
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.ProductID,
+		&i.Quantity,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateCartItemQuantityByID = `-- name: UpdateCartItemQuantityByID :one
+UPDATE cart
+SET quantity = $3, updated_at = now()
+WHERE id = $1 AND user_id = $2
+RETURNING id, user_id, product_id, quantity, created_at, updated_at
+`
+
+type UpdateCartItemQuantityByIDParams struct {
+	ID       uuid.UUID `json:"id"`
+	UserID   uuid.UUID `json:"user_id"`
+	Quantity int32     `json:"quantity"`
+}
+
+func (q *Queries) UpdateCartItemQuantityByID(ctx context.Context, arg UpdateCartItemQuantityByIDParams) (Cart, error) {
+	row := q.db.QueryRowContext(ctx, updateCartItemQuantityByID, arg.ID, arg.UserID, arg.Quantity)
 	var i Cart
 	err := row.Scan(
 		&i.ID,
