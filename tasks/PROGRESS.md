@@ -15,7 +15,7 @@ Order: 000, 008, 007, 040, 009 ... 038. Status: todo/done/blocked.
 | 013 | done | Not tested against real AWS; presigned GET not wired (spec uses CDN public_url). |
 | 014 | done | Product link target pages and slide admin come later; slides need seed (030). |
 | 015 | done | Card links to product detail await TASK-016. |
-| 016 | todo | |
+| 016 | done | Slug->id resolved via list API (spec has only GET by id); fallback slug sample-product when API down at build. |
 | 017 | todo | |
 | 018 | todo | |
 | 019 | todo | |

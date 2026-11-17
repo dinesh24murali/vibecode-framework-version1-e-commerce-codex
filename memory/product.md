@@ -66,3 +66,7 @@
 ## Product list page (TASK-015)
 
 - `/products/` URL params: repeated `category` (slugs), repeated `attr` (attribute value UUIDs), `q`, `sort` (omitted when newest), `page` (omitted when 1). `filterSlice` in the root store mirrors them; `useProductFilterUrlSync` keeps URL and store in sync and gates rendering until hydrated. Filters are not persisted.
+
+## Product detail page (TASK-016)
+
+- `/products/[slug]/` is pre-rendered by `generateStaticParams` (pages through `GET /products`). The spec only has `GET /products/{id}`, so slug is resolved to id via the list API (build time, and client-side via `?q=<slug>` when the page was built without data). If the API is down at build, a single `sample-product` shell is generated and resolves from the URL on the client. Zoom is custom (hover scale 2x, pinch up to 4x); no image-zoom dependency.
