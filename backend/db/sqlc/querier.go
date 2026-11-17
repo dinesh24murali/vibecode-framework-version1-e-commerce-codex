@@ -14,6 +14,12 @@ type Querier interface {
 	AssignAttributeToProduct(ctx context.Context, arg AssignAttributeToProductParams) (ProductAttributeAssignment, error)
 	ClearCart(ctx context.Context, userID uuid.UUID) error
 	ClearDefaultAddresses(ctx context.Context, userID uuid.UUID) error
+	// Public catalogue reads. Filters (all optional):
+	//   category_slugs  OR-combined category slugs
+	//   query           full-text search on title/author/description/isbn
+	//   value_ids       attribute value ids: OR within one attribute dimension, AND across dimensions
+	//   sort            price_asc | price_desc | newest | popular (popular falls back to newest until sales data exists)
+	CountCatalogProducts(ctx context.Context, arg CountCatalogProductsParams) (int64, error)
 	CountOrdersByUserFiltered(ctx context.Context, arg CountOrdersByUserFilteredParams) (int64, error)
 	CreateAddress(ctx context.Context, arg CreateAddressParams) (Address, error)
 	CreateAttribute(ctx context.Context, arg CreateAttributeParams) (ProductAttribute, error)
@@ -38,6 +44,7 @@ type Querier interface {
 	DeleteCartItem(ctx context.Context, arg DeleteCartItemParams) error
 	DeleteExpiredTokens(ctx context.Context) error
 	DeleteProductImage(ctx context.Context, id uuid.UUID) error
+	GetActiveProductByID(ctx context.Context, id uuid.UUID) (GetActiveProductByIDRow, error)
 	GetAddressByID(ctx context.Context, id uuid.UUID) (Address, error)
 	GetAddressForUser(ctx context.Context, arg GetAddressForUserParams) (Address, error)
 	GetAttributeByCode(ctx context.Context, code string) (ProductAttribute, error)
@@ -64,15 +71,20 @@ type Querier interface {
 	GetRefreshTokenByHash(ctx context.Context, tokenHash string) (RefreshToken, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
+	ListActiveCategorySlugs(ctx context.Context) ([]string, error)
 	ListAddressesByUser(ctx context.Context, userID uuid.UUID) ([]Address, error)
 	ListAttributes(ctx context.Context) ([]ProductAttribute, error)
+	ListAttributesByProducts(ctx context.Context, dollar_1 []uuid.UUID) ([]ListAttributesByProductsRow, error)
 	ListAuditEventsByOrder(ctx context.Context, orderID uuid.NullUUID) ([]AuditEvent, error)
+	ListCatalogProducts(ctx context.Context, arg ListCatalogProductsParams) ([]ListCatalogProductsRow, error)
 	ListCategories(ctx context.Context) ([]Category, error)
 	ListContactQueries(ctx context.Context, arg ListContactQueriesParams) ([]ContactQuery, error)
 	ListCouponUsersByCoupon(ctx context.Context, couponID uuid.UUID) ([]CouponUser, error)
 	ListCoupons(ctx context.Context, arg ListCouponsParams) ([]Coupon, error)
 	ListFilterableAttributes(ctx context.Context) ([]ProductAttribute, error)
 	ListImagesByProduct(ctx context.Context, productID uuid.UUID) ([]ProductImage, error)
+	ListImagesByProducts(ctx context.Context, dollar_1 []uuid.UUID) ([]ProductImage, error)
+	ListInventoryByProducts(ctx context.Context, dollar_1 []uuid.UUID) ([]InventoryItem, error)
 	ListOrderItems(ctx context.Context, orderID uuid.UUID) ([]OrderItem, error)
 	ListOrderItemsWithProduct(ctx context.Context, orderID uuid.UUID) ([]ListOrderItemsWithProductRow, error)
 	ListOrdersByUser(ctx context.Context, arg ListOrdersByUserParams) ([]Order, error)

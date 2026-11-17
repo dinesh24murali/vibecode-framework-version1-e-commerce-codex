@@ -147,6 +147,8 @@ type Category struct {
 	Name        string         `json:"name"`
 	Description sql.NullString `json:"description"`
 	CreatedAt   time.Time      `json:"created_at"`
+	ImageUrl    sql.NullString `json:"image_url"`
+	UpdatedAt   time.Time      `json:"updated_at"`
 }
 
 type Consent struct {
@@ -301,11 +303,13 @@ type ProductAttributeValue struct {
 }
 
 type ProductImage struct {
-	ID        uuid.UUID `json:"id"`
-	ProductID uuid.UUID `json:"product_id"`
-	ImageUrl  string    `json:"image_url"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID        uuid.UUID      `json:"id"`
+	ProductID uuid.UUID      `json:"product_id"`
+	ImageUrl  string         `json:"image_url"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	AltText   sql.NullString `json:"alt_text"`
+	SortOrder int32          `json:"sort_order"`
 }
 
 type RefreshToken struct {

@@ -56,13 +56,21 @@ func newRouter(deps RouterDeps) *gin.Engine {
 	accountSvc := services.NewAccountService(userRepo, addrRepo, orderRepo, otpSvc)
 	accountHandler := handlers.NewAccountHandler(accountSvc)
 
-	attrHandler := handlers.NewAttributeHandler(services.NewAttributeService(repositories.NewAttributeRepository(deps.Pool)))
+	attrSvc := services.NewAttributeService(repositories.NewAttributeRepository(deps.Pool))
+	attrHandler := handlers.NewAttributeHandler(attrSvc)
+	productSvc := services.NewProductService(repositories.NewProductRepository(deps.Pool), repositories.NewCategoryRepository(deps.Pool), attrSvc)
+	productHandler := handlers.NewProductHandler(productSvc)
+	categoryHandler := handlers.NewCategoryHandler(productSvc)
 
 	v1 := r.Group("/api/v1")
 
 	// Public catalogue routes — no middleware.
 	v1.GET("/attributes", attrHandler.List)
 	v1.GET("/attributes/:attrDefId/values", attrHandler.ListValues)
+	v1.GET("/products", productHandler.List)
+	v1.GET("/products/:id", productHandler.Get)
+	v1.GET("/categories", categoryHandler.List)
+	v1.GET("/categories/:id", categoryHandler.Get)
 
 	// Public auth routes — no middleware.
 	authGroup := v1.Group("/auth")

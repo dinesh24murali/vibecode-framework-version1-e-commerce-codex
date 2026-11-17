@@ -14,7 +14,7 @@ import (
 const createProductImage = `-- name: CreateProductImage :one
 INSERT INTO product_images (product_id, image_url)
 VALUES ($1, $2)
-RETURNING id, product_id, image_url, created_at, updated_at
+RETURNING id, product_id, image_url, created_at, updated_at, alt_text, sort_order
 `
 
 type CreateProductImageParams struct {
@@ -31,6 +31,8 @@ func (q *Queries) CreateProductImage(ctx context.Context, arg CreateProductImage
 		&i.ImageUrl,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AltText,
+		&i.SortOrder,
 	)
 	return i, err
 }
@@ -46,7 +48,7 @@ func (q *Queries) DeleteProductImage(ctx context.Context, id uuid.UUID) error {
 }
 
 const listImagesByProduct = `-- name: ListImagesByProduct :many
-SELECT id, product_id, image_url, created_at, updated_at FROM product_images
+SELECT id, product_id, image_url, created_at, updated_at, alt_text, sort_order FROM product_images
 WHERE product_id = $1
 ORDER BY created_at DESC
 `
@@ -66,6 +68,8 @@ func (q *Queries) ListImagesByProduct(ctx context.Context, productID uuid.UUID) 
 			&i.ImageUrl,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.AltText,
+			&i.SortOrder,
 		); err != nil {
 			return nil, err
 		}

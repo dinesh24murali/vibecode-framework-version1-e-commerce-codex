@@ -11,7 +11,7 @@ Order: 000, 008, 007, 040, 009 ... 038. Status: todo/done/blocked.
 | 009 | done | e2e mocks API; Facebook popup not e2e-tested. |
 | 010 | done | Phone not in spec; reload requires re-login (no refresh flow yet). |
 | 011 | done | Filter predicate factory deferred to 012. |
-| 012 | todo | |
+| 012 | done | 12 seeded categories only after TASK-030; predicate factory not needed (SQL params). |
 | 013 | todo | |
 | 014 | todo | |
 | 015 | todo | |

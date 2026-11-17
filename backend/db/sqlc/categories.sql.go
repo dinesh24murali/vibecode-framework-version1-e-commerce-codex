@@ -15,7 +15,7 @@ import (
 const createCategory = `-- name: CreateCategory :one
 INSERT INTO categories (slug, name, description)
 VALUES ($1, $2, $3)
-RETURNING id, slug, name, description, created_at
+RETURNING id, slug, name, description, created_at, image_url, updated_at
 `
 
 type CreateCategoryParams struct {
@@ -33,12 +33,14 @@ func (q *Queries) CreateCategory(ctx context.Context, arg CreateCategoryParams) 
 		&i.Name,
 		&i.Description,
 		&i.CreatedAt,
+		&i.ImageUrl,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
 
 const getCategoryByID = `-- name: GetCategoryByID :one
-SELECT id, slug, name, description, created_at FROM categories
+SELECT id, slug, name, description, created_at, image_url, updated_at FROM categories
 WHERE id = $1
 `
 
@@ -51,12 +53,14 @@ func (q *Queries) GetCategoryByID(ctx context.Context, id uuid.UUID) (Category, 
 		&i.Name,
 		&i.Description,
 		&i.CreatedAt,
+		&i.ImageUrl,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
 
 const getCategoryBySlug = `-- name: GetCategoryBySlug :one
-SELECT id, slug, name, description, created_at FROM categories
+SELECT id, slug, name, description, created_at, image_url, updated_at FROM categories
 WHERE slug = $1
 `
 
@@ -69,12 +73,14 @@ func (q *Queries) GetCategoryBySlug(ctx context.Context, slug string) (Category,
 		&i.Name,
 		&i.Description,
 		&i.CreatedAt,
+		&i.ImageUrl,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
 
 const listCategories = `-- name: ListCategories :many
-SELECT id, slug, name, description, created_at FROM categories
+SELECT id, slug, name, description, created_at, image_url, updated_at FROM categories
 ORDER BY name
 `
 
@@ -93,6 +99,8 @@ func (q *Queries) ListCategories(ctx context.Context) ([]Category, error) {
 			&i.Name,
 			&i.Description,
 			&i.CreatedAt,
+			&i.ImageUrl,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -112,7 +120,7 @@ UPDATE categories
 SET name        = $2,
     description = $3
 WHERE id = $1
-RETURNING id, slug, name, description, created_at
+RETURNING id, slug, name, description, created_at, image_url, updated_at
 `
 
 type UpdateCategoryParams struct {
@@ -130,6 +138,8 @@ func (q *Queries) UpdateCategory(ctx context.Context, arg UpdateCategoryParams) 
 		&i.Name,
 		&i.Description,
 		&i.CreatedAt,
+		&i.ImageUrl,
+		&i.UpdatedAt,
 	)
 	return i, err
 }

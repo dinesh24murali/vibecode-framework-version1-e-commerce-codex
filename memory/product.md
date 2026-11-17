@@ -51,3 +51,9 @@
 ## Attributes API (TASK-011)
 
 - `GET /api/v1/attributes` lists only `is_filterable` attributes, each with ordered values; `GET /attributes/{id}/values` returns 404 for unknown attribute ids (empty list when it has no values). Both are public. Wire names follow the spec: `code`, `value_slug`.
+
+## Catalogue API (TASK-012)
+
+- `GET /products` query params follow the spec: `q`, `category[]` (slugs, OR), `attr_value_id[]` (OR within an attribute, AND across attributes), `sort_by` (price_asc|price_desc|newest|popular; popular = newest for now), `page`, `limit` (default 20, max 100). Response: `data`, `meta` (total, page, limit, total_pages), `filters`.
+- Only `is_active = true` products are public (products has no deleted_at). Detail `stock` = on_hand - reserved. Category per product is single in the DB, returned as a one-element `categories` array.
+- Filter SQL lives in `db/queries/catalog.sql`; verified by the real-DB test in `internal/repositories/product_repository_test.go`.

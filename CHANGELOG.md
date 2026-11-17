@@ -9,6 +9,7 @@ Format: `- [YYYY-MM-DD] <task-name>: <one-line summary>`
 
 ## Unreleased
 
+- [2026-11-17] task-012-product-category-public-api: feat: public GET /products (filters, search, sort, pagination, filter facets), /products/{id}, /categories, /categories/{id}; migration for spec columns; real-DB filter tests
 - [2026-11-17] task-011-attributes-system-api: feat: public GET /attributes and /attributes/{id}/values with contract and repository tests
 - [2026-11-17] task-010-account-management: feat: account profile/password/email-change, address CRUD, order list/get/cancel endpoints and 3-tab account page; fix: removed debug prints that panicked on successful registration
 - [2026-11-17] task-009-auth-pages-signup-login-facebook: feat: signup (email, OTP, password), login with ?redirect=, Facebook login button, Playwright auth e2e with mocked API, Playwright config
