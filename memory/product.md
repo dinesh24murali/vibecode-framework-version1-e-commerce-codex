@@ -57,3 +57,8 @@
 - `GET /products` query params follow the spec: `q`, `category[]` (slugs, OR), `attr_value_id[]` (OR within an attribute, AND across attributes), `sort_by` (price_asc|price_desc|newest|popular; popular = newest for now), `page`, `limit` (default 20, max 100). Response: `data`, `meta` (total, page, limit, total_pages), `filters`.
 - Only `is_active = true` products are public (products has no deleted_at). Detail `stock` = on_hand - reserved. Category per product is single in the DB, returned as a one-element `categories` array.
 - Filter SQL lives in `db/queries/catalog.sql`; verified by the real-DB test in `internal/repositories/product_repository_test.go`.
+
+## Landing page (TASK-014)
+
+- `GET /api/v1/landing`: `carousel_slides` (table `carousel_slides`, active only, max 5, ordered by sort_order) and `featured_products` (8 most recent active products; no featured flag exists).
+- Frontend `app/(shop)/page.tsx` fetches the payload at build time; if the API is unreachable then, `LandingContent` fetches it on mount. Empty slides show a fallback banner; no products shows "Products are temporarily unavailable."

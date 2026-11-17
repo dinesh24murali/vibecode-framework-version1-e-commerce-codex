@@ -13,7 +13,7 @@ Order: 000, 008, 007, 040, 009 ... 038. Status: todo/done/blocked.
 | 011 | done | Filter predicate factory deferred to 012. |
 | 012 | done | 12 seeded categories only after TASK-030; predicate factory not needed (SQL params). |
 | 013 | done | Not tested against real AWS; presigned GET not wired (spec uses CDN public_url). |
-| 014 | todo | |
+| 014 | done | Product link target pages and slide admin come later; slides need seed (030). |
 | 015 | todo | |
 | 016 | todo | |
 | 017 | todo | |

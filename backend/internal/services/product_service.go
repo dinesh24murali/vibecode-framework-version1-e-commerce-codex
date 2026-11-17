@@ -107,23 +107,7 @@ func (s *ProductService) ListProducts(ctx context.Context, q ProductQuery) (*mod
 		return nil, err
 	}
 
-	data := make([]models.ProductSummary, 0, len(rows))
-	for _, r := range rows {
-		disc := float64(r.DiscountPercent.Int32)
-		p := price(r.PriceInr)
-		sum := models.ProductSummary{
-			ID: r.ID, Name: r.Title, Slug: r.Slug, Price: p, DiscountPercent: disc,
-			DiscountedPrice: round2(p * (100 - disc) / 100), Attributes: rel.attrs[r.ID],
-			Categories: rel.categoryFor(r.CategoryID), IsActive: r.IsActive,
-		}
-		if imgs := rel.images[r.ID]; len(imgs) > 0 {
-			sum.CoverImage = &imgs[0]
-		}
-		if sum.Attributes == nil {
-			sum.Attributes = []models.ProductAttribute{}
-		}
-		data = append(data, sum)
-	}
+	data := summarise(rows, rel)
 
 	filters, err := s.filters(ctx)
 	if err != nil {
@@ -249,4 +233,42 @@ func (s *ProductService) filters(ctx context.Context) (*models.ProductFilters, e
 		slugs = []string{}
 	}
 	return &models.ProductFilters{Categories: slugs, Attributes: groups, SortOptions: SortOptions}, nil
+}
+
+func summarise(rows []dbsqlc.ListCatalogProductsRow, rel *relations) []models.ProductSummary {
+	data := make([]models.ProductSummary, 0, len(rows))
+	for _, r := range rows {
+		disc := float64(r.DiscountPercent.Int32)
+		p := price(r.PriceInr)
+		sum := models.ProductSummary{
+			ID: r.ID, Name: r.Title, Slug: r.Slug, Price: p, DiscountPercent: disc,
+			DiscountedPrice: round2(p * (100 - disc) / 100), Attributes: rel.attrs[r.ID],
+			Categories: rel.categoryFor(r.CategoryID), IsActive: r.IsActive,
+		}
+		if imgs := rel.images[r.ID]; len(imgs) > 0 {
+			sum.CoverImage = &imgs[0]
+		}
+		if sum.Attributes == nil {
+			sum.Attributes = []models.ProductAttribute{}
+		}
+		data = append(data, sum)
+	}
+	return data
+}
+
+// Featured returns the n most recent active products (the schema has no featured flag).
+func (s *ProductService) Featured(ctx context.Context, n int) ([]models.ProductSummary, error) {
+	rows, err := s.products.List(ctx, repositories.CatalogFilter{Sort: "newest"}, int32(n), 0) //nolint:gosec // small constant
+	if err != nil {
+		return nil, err
+	}
+	ids := make([]uuid.UUID, 0, len(rows))
+	for _, r := range rows {
+		ids = append(ids, r.ID)
+	}
+	rel, err := s.related(ctx, ids)
+	if err != nil {
+		return nil, err
+	}
+	return summarise(rows, rel), nil
 }

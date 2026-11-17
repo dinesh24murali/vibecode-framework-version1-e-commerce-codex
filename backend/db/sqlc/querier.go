@@ -71,6 +71,7 @@ type Querier interface {
 	GetRefreshTokenByHash(ctx context.Context, tokenHash string) (RefreshToken, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
+	ListActiveCarouselSlides(ctx context.Context) ([]CarouselSlide, error)
 	ListActiveCategorySlugs(ctx context.Context) ([]string, error)
 	ListAddressesByUser(ctx context.Context, userID uuid.UUID) ([]Address, error)
 	ListAttributes(ctx context.Context) ([]ProductAttribute, error)

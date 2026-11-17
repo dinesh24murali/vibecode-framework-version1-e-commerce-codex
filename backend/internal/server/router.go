@@ -63,6 +63,7 @@ func newRouter(deps RouterDeps) *gin.Engine {
 	productSvc := services.NewProductService(repositories.NewProductRepository(deps.Pool), repositories.NewCategoryRepository(deps.Pool), attrSvc)
 	productHandler := handlers.NewProductHandler(productSvc)
 	categoryHandler := handlers.NewCategoryHandler(productSvc)
+	landingHandler := handlers.NewLandingHandler(services.NewLandingService(repositories.NewCarouselRepository(deps.Pool), productSvc))
 
 	var storage services.StorageService = services.DisabledStorage{}
 	if deps.Config.S3Bucket != "" {
@@ -79,6 +80,7 @@ func newRouter(deps RouterDeps) *gin.Engine {
 	// Public catalogue routes — no middleware.
 	v1.GET("/attributes", attrHandler.List)
 	v1.GET("/attributes/:attrDefId/values", attrHandler.ListValues)
+	v1.GET("/landing", landingHandler.Get)
 	v1.GET("/products", productHandler.List)
 	v1.GET("/products/:id", productHandler.Get)
 	v1.GET("/categories", categoryHandler.List)

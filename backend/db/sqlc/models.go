@@ -132,6 +132,19 @@ type AuditEvent struct {
 	CreatedAt   time.Time             `json:"created_at"`
 }
 
+type CarouselSlide struct {
+	ID        uuid.UUID      `json:"id"`
+	Title     string         `json:"title"`
+	Subtitle  sql.NullString `json:"subtitle"`
+	ImageUrl  string         `json:"image_url"`
+	CtaLabel  sql.NullString `json:"cta_label"`
+	CtaUrl    sql.NullString `json:"cta_url"`
+	SortOrder int32          `json:"sort_order"`
+	IsActive  bool           `json:"is_active"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+}
+
 type Cart struct {
 	ID        uuid.UUID `json:"id"`
 	UserID    uuid.UUID `json:"user_id"`
