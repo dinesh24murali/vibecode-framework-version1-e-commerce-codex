@@ -56,7 +56,13 @@ func newRouter(deps RouterDeps) *gin.Engine {
 	accountSvc := services.NewAccountService(userRepo, addrRepo, orderRepo, otpSvc)
 	accountHandler := handlers.NewAccountHandler(accountSvc)
 
+	attrHandler := handlers.NewAttributeHandler(services.NewAttributeService(repositories.NewAttributeRepository(deps.Pool)))
+
 	v1 := r.Group("/api/v1")
+
+	// Public catalogue routes — no middleware.
+	v1.GET("/attributes", attrHandler.List)
+	v1.GET("/attributes/:attrDefId/values", attrHandler.ListValues)
 
 	// Public auth routes — no middleware.
 	authGroup := v1.Group("/auth")

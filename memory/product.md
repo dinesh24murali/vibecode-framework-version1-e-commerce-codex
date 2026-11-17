@@ -47,3 +47,7 @@
 - Order statuses in the API are open/fulfilled/cancelled, mapped from the DB enum (see `services.SpecStatus`). Only pending_payment, paid and packed orders can be cancelled.
 - Order JSON `gst_amount` comes from `tax_inr`; `coupon_code`/`coupon_discount` are null/0 until coupons are stored on orders.
 - Email change: OTP purpose `email_change_otp`, keyed by the new email; email only changes after confirm.
+
+## Attributes API (TASK-011)
+
+- `GET /api/v1/attributes` lists only `is_filterable` attributes, each with ordered values; `GET /attributes/{id}/values` returns 404 for unknown attribute ids (empty list when it has no values). Both are public. Wire names follow the spec: `code`, `value_slug`.

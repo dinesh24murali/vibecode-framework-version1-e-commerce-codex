@@ -41,6 +41,7 @@ type Querier interface {
 	GetAddressByID(ctx context.Context, id uuid.UUID) (Address, error)
 	GetAddressForUser(ctx context.Context, arg GetAddressForUserParams) (Address, error)
 	GetAttributeByCode(ctx context.Context, code string) (ProductAttribute, error)
+	GetAttributeByID(ctx context.Context, id uuid.UUID) (ProductAttribute, error)
 	GetAttributeValueByID(ctx context.Context, id uuid.UUID) (ProductAttributeValue, error)
 	GetAttributesByProduct(ctx context.Context, productID uuid.UUID) ([]GetAttributesByProductRow, error)
 	GetCartByUser(ctx context.Context, userID uuid.UUID) ([]Cart, error)

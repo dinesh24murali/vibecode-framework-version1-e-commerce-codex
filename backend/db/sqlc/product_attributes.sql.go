@@ -7,6 +7,8 @@ package sqlc
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 const createAttribute = `-- name: CreateAttribute :one
@@ -49,6 +51,26 @@ WHERE code = $1
 
 func (q *Queries) GetAttributeByCode(ctx context.Context, code string) (ProductAttribute, error) {
 	row := q.db.QueryRowContext(ctx, getAttributeByCode, code)
+	var i ProductAttribute
+	err := row.Scan(
+		&i.ID,
+		&i.Code,
+		&i.Name,
+		&i.IsFilterable,
+		&i.SortOrder,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getAttributeByID = `-- name: GetAttributeByID :one
+SELECT id, code, name, is_filterable, sort_order, created_at, updated_at FROM product_attributes
+WHERE id = $1
+`
+
+func (q *Queries) GetAttributeByID(ctx context.Context, id uuid.UUID) (ProductAttribute, error) {
+	row := q.db.QueryRowContext(ctx, getAttributeByID, id)
 	var i ProductAttribute
 	err := row.Scan(
 		&i.ID,

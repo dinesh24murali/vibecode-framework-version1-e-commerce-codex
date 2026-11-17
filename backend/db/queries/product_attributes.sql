@@ -15,3 +15,7 @@ WHERE code = $1;
 INSERT INTO product_attributes (code, name, is_filterable, sort_order)
 VALUES ($1, $2, $3, $4)
 RETURNING *;
+
+-- name: GetAttributeByID :one
+SELECT * FROM product_attributes
+WHERE id = $1;
