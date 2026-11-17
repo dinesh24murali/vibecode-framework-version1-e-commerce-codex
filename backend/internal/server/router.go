@@ -51,6 +51,11 @@ func newRouter(deps RouterDeps) *gin.Engine {
 	authSvc := services.NewAuthService(userRepo, tokenRepo, jwtSvc, otpSvc, fbClient)
 	authHandler := handlers.NewAuthHandler(authSvc)
 
+	addrRepo := repositories.NewAddressRepository(deps.Pool)
+	orderRepo := repositories.NewOrderRepository(deps.Pool)
+	accountSvc := services.NewAccountService(userRepo, addrRepo, orderRepo, otpSvc)
+	accountHandler := handlers.NewAccountHandler(accountSvc)
+
 	v1 := r.Group("/api/v1")
 
 	// Public auth routes — no middleware.
@@ -75,6 +80,21 @@ func newRouter(deps RouterDeps) *gin.Engine {
 	protected := v1.Group("", auth.Middleware(jwtSvc))
 	{
 		protected.POST("/auth/logout", authHandler.Logout)
+
+		acct := protected.Group("/account")
+		acct.GET("/profile", accountHandler.GetProfile)
+		acct.PUT("/profile", accountHandler.UpdateProfile)
+		acct.PUT("/profile/password", accountHandler.ChangePassword)
+		acct.POST("/profile/email-change/request", accountHandler.RequestEmailChange)
+		acct.POST("/profile/email-change/confirm", accountHandler.ConfirmEmailChange)
+		acct.GET("/addresses", accountHandler.ListAddresses)
+		acct.POST("/addresses", accountHandler.CreateAddress)
+		acct.PUT("/addresses/:id", accountHandler.UpdateAddress)
+		acct.DELETE("/addresses/:id", accountHandler.DeleteAddress)
+
+		protected.GET("/orders", accountHandler.ListOrders)
+		protected.GET("/orders/:id", accountHandler.GetOrder)
+		protected.PUT("/orders/:id/cancel", accountHandler.CancelOrder)
 	}
 
 	return r

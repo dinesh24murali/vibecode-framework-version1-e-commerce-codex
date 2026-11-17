@@ -14,6 +14,7 @@ type Querier interface {
 	AssignAttributeToProduct(ctx context.Context, arg AssignAttributeToProductParams) (ProductAttributeAssignment, error)
 	ClearCart(ctx context.Context, userID uuid.UUID) error
 	ClearDefaultAddresses(ctx context.Context, userID uuid.UUID) error
+	CountOrdersByUserFiltered(ctx context.Context, arg CountOrdersByUserFilteredParams) (int64, error)
 	CreateAddress(ctx context.Context, arg CreateAddressParams) (Address, error)
 	CreateAttribute(ctx context.Context, arg CreateAttributeParams) (ProductAttribute, error)
 	CreateAttributeValue(ctx context.Context, arg CreateAttributeValueParams) (ProductAttributeValue, error)
@@ -38,6 +39,7 @@ type Querier interface {
 	DeleteExpiredTokens(ctx context.Context) error
 	DeleteProductImage(ctx context.Context, id uuid.UUID) error
 	GetAddressByID(ctx context.Context, id uuid.UUID) (Address, error)
+	GetAddressForUser(ctx context.Context, arg GetAddressForUserParams) (Address, error)
 	GetAttributeByCode(ctx context.Context, code string) (ProductAttribute, error)
 	GetAttributeValueByID(ctx context.Context, id uuid.UUID) (ProductAttributeValue, error)
 	GetAttributesByProduct(ctx context.Context, productID uuid.UUID) ([]GetAttributesByProductRow, error)
@@ -71,7 +73,9 @@ type Querier interface {
 	ListFilterableAttributes(ctx context.Context) ([]ProductAttribute, error)
 	ListImagesByProduct(ctx context.Context, productID uuid.UUID) ([]ProductImage, error)
 	ListOrderItems(ctx context.Context, orderID uuid.UUID) ([]OrderItem, error)
+	ListOrderItemsWithProduct(ctx context.Context, orderID uuid.UUID) ([]ListOrderItemsWithProductRow, error)
 	ListOrdersByUser(ctx context.Context, arg ListOrdersByUserParams) ([]Order, error)
+	ListOrdersByUserFiltered(ctx context.Context, arg ListOrdersByUserFilteredParams) ([]Order, error)
 	ListProducts(ctx context.Context, arg ListProductsParams) ([]ListProductsRow, error)
 	ListProductsByCategory(ctx context.Context, arg ListProductsByCategoryParams) ([]ListProductsByCategoryRow, error)
 	ListValuesByAttribute(ctx context.Context, attributeID uuid.UUID) ([]ProductAttributeValue, error)
@@ -92,6 +96,8 @@ type Querier interface {
 	UpdatePaymentStatus(ctx context.Context, arg UpdatePaymentStatusParams) (Payment, error)
 	UpdateProduct(ctx context.Context, arg UpdateProductParams) (UpdateProductRow, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
+	UpdateUserEmail(ctx context.Context, arg UpdateUserEmailParams) (User, error)
+	UpdateUserName(ctx context.Context, arg UpdateUserNameParams) (User, error)
 	UpsertCartItem(ctx context.Context, arg UpsertCartItemParams) (Cart, error)
 	WithdrawConsent(ctx context.Context, arg WithdrawConsentParams) error
 }

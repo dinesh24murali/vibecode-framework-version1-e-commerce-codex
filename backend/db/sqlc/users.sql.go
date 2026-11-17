@@ -153,3 +153,63 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 	)
 	return i, err
 }
+
+const updateUserEmail = `-- name: UpdateUserEmail :one
+UPDATE users
+SET email      = $2,
+    updated_at = now()
+WHERE id = $1 AND deleted_at IS NULL
+RETURNING id, email, password_hash, full_name, phone_e164, role, created_at, updated_at, deleted_at
+`
+
+type UpdateUserEmailParams struct {
+	ID    uuid.UUID `json:"id"`
+	Email string    `json:"email"`
+}
+
+func (q *Queries) UpdateUserEmail(ctx context.Context, arg UpdateUserEmailParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, updateUserEmail, arg.ID, arg.Email)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.PasswordHash,
+		&i.FullName,
+		&i.PhoneE164,
+		&i.Role,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
+const updateUserName = `-- name: UpdateUserName :one
+UPDATE users
+SET full_name  = $2,
+    updated_at = now()
+WHERE id = $1 AND deleted_at IS NULL
+RETURNING id, email, password_hash, full_name, phone_e164, role, created_at, updated_at, deleted_at
+`
+
+type UpdateUserNameParams struct {
+	ID       uuid.UUID `json:"id"`
+	FullName string    `json:"full_name"`
+}
+
+func (q *Queries) UpdateUserName(ctx context.Context, arg UpdateUserNameParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, updateUserName, arg.ID, arg.FullName)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.PasswordHash,
+		&i.FullName,
+		&i.PhoneE164,
+		&i.Role,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}

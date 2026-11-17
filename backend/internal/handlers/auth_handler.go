@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -105,21 +104,16 @@ func (h *AuthHandler) RegisterVerifyOTP(c *gin.Context) {
 
 // RegisterComplete godoc POST /api/v1/auth/register/complete
 func (h *AuthHandler) RegisterComplete(c *gin.Context) {
-	fmt.Println("What handler!!!")
 	var req registerCompleteRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	fmt.Println("What handler!!!")
-	fmt.Println(c.ClientIP())
-	fmt.Println(c.GetHeader("User-Agent"))
 	tokens, err := h.svc.RegisterComplete(
 		c.Request.Context(),
 		req.OTPToken, req.FirstName, req.LastName, req.Password,
 		c.ClientIP(), c.GetHeader("User-Agent"),
 	)
-	fmt.Printf("%s", err.Error())
 
 	if err != nil {
 		switch {

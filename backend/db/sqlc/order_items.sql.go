@@ -87,3 +87,56 @@ func (q *Queries) ListOrderItems(ctx context.Context, orderID uuid.UUID) ([]Orde
 	}
 	return items, nil
 }
+
+const listOrderItemsWithProduct = `-- name: ListOrderItemsWithProduct :many
+SELECT oi.id, oi.order_id, oi.product_id, oi.product_title, oi.quantity,
+       oi.unit_price_inr, oi.line_total_inr,
+       COALESCE(p.slug, '') AS product_slug
+FROM order_items oi
+LEFT JOIN products p ON p.id = oi.product_id
+WHERE oi.order_id = $1
+ORDER BY oi.id
+`
+
+type ListOrderItemsWithProductRow struct {
+	ID           uuid.UUID     `json:"id"`
+	OrderID      uuid.UUID     `json:"order_id"`
+	ProductID    uuid.NullUUID `json:"product_id"`
+	ProductTitle string        `json:"product_title"`
+	Quantity     int32         `json:"quantity"`
+	UnitPriceInr string        `json:"unit_price_inr"`
+	LineTotalInr string        `json:"line_total_inr"`
+	ProductSlug  string        `json:"product_slug"`
+}
+
+func (q *Queries) ListOrderItemsWithProduct(ctx context.Context, orderID uuid.UUID) ([]ListOrderItemsWithProductRow, error) {
+	rows, err := q.db.QueryContext(ctx, listOrderItemsWithProduct, orderID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListOrderItemsWithProductRow
+	for rows.Next() {
+		var i ListOrderItemsWithProductRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.OrderID,
+			&i.ProductID,
+			&i.ProductTitle,
+			&i.Quantity,
+			&i.UnitPriceInr,
+			&i.LineTotalInr,
+			&i.ProductSlug,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

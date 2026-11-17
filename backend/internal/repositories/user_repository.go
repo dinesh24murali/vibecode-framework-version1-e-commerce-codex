@@ -20,6 +20,8 @@ type UserRepository interface {
 	GetByEmail(ctx context.Context, email string) (*dbsqlc.User, error)
 	Create(ctx context.Context, params dbsqlc.CreateUserParams) (*dbsqlc.User, error)
 	UpdatePasswordHash(ctx context.Context, id uuid.UUID, hash string) error
+	UpdateName(ctx context.Context, id uuid.UUID, fullName string) (*dbsqlc.User, error)
+	UpdateEmail(ctx context.Context, id uuid.UUID, email string) (*dbsqlc.User, error)
 }
 
 type pgUserRepository struct {
@@ -60,4 +62,20 @@ func (r *pgUserRepository) UpdatePasswordHash(ctx context.Context, id uuid.UUID,
 		ID:           id,
 		PasswordHash: sql.NullString{String: hash, Valid: true},
 	})
+}
+
+func (r *pgUserRepository) UpdateName(ctx context.Context, id uuid.UUID, fullName string) (*dbsqlc.User, error) {
+	u, err := r.q.UpdateUserName(ctx, dbsqlc.UpdateUserNameParams{ID: id, FullName: fullName})
+	if err != nil {
+		return nil, err
+	}
+	return &u, nil
+}
+
+func (r *pgUserRepository) UpdateEmail(ctx context.Context, id uuid.UUID, email string) (*dbsqlc.User, error) {
+	u, err := r.q.UpdateUserEmail(ctx, dbsqlc.UpdateUserEmailParams{ID: id, Email: email})
+	if err != nil {
+		return nil, err
+	}
+	return &u, nil
 }

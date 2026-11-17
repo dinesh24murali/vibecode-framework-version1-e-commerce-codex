@@ -9,7 +9,7 @@ Order: 000, 008, 007, 040, 009 ... 038. Status: todo/done/blocked.
 | 007 | done | orval, generated client committed. |
 | 040 | done | |
 | 009 | done | e2e mocks API; Facebook popup not e2e-tested. |
-| 010 | todo | |
+| 010 | done | Phone not in spec; reload requires re-login (no refresh flow yet). |
 | 011 | todo | |
 | 012 | todo | |
 | 013 | todo | |

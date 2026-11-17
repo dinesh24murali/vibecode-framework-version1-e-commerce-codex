@@ -9,7 +9,26 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
+
+const countOrdersByUserFiltered = `-- name: CountOrdersByUserFiltered :one
+SELECT count(*) FROM orders
+WHERE user_id = $1
+  AND (cardinality($2::order_status[]) = 0 OR status = ANY($2::order_status[]))
+`
+
+type CountOrdersByUserFilteredParams struct {
+	UserID  uuid.UUID     `json:"user_id"`
+	Column2 []OrderStatus `json:"column_2"`
+}
+
+func (q *Queries) CountOrdersByUserFiltered(ctx context.Context, arg CountOrdersByUserFilteredParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countOrdersByUserFiltered, arg.UserID, pq.Array(arg.Column2))
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
 
 const createOrder = `-- name: CreateOrder :one
 INSERT INTO orders (user_id, order_number, status, subtotal_inr, shipping_inr, tax_inr, total_inr, currency_code, placed_at)
@@ -122,6 +141,62 @@ type ListOrdersByUserParams struct {
 
 func (q *Queries) ListOrdersByUser(ctx context.Context, arg ListOrdersByUserParams) ([]Order, error) {
 	rows, err := q.db.QueryContext(ctx, listOrdersByUser, arg.UserID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Order
+	for rows.Next() {
+		var i Order
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.OrderNumber,
+			&i.Status,
+			&i.SubtotalInr,
+			&i.ShippingInr,
+			&i.TaxInr,
+			&i.TotalInr,
+			&i.CurrencyCode,
+			&i.PlacedAt,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listOrdersByUserFiltered = `-- name: ListOrdersByUserFiltered :many
+SELECT id, user_id, order_number, status, subtotal_inr, shipping_inr, tax_inr, total_inr, currency_code, placed_at, created_at, updated_at FROM orders
+WHERE user_id = $1
+  AND (cardinality($2::order_status[]) = 0 OR status = ANY($2::order_status[]))
+ORDER BY created_at DESC
+LIMIT $3 OFFSET $4
+`
+
+type ListOrdersByUserFilteredParams struct {
+	UserID  uuid.UUID     `json:"user_id"`
+	Column2 []OrderStatus `json:"column_2"`
+	Limit   int32         `json:"limit"`
+	Offset  int32         `json:"offset"`
+}
+
+func (q *Queries) ListOrdersByUserFiltered(ctx context.Context, arg ListOrdersByUserFilteredParams) ([]Order, error) {
+	rows, err := q.db.QueryContext(ctx, listOrdersByUserFiltered,
+		arg.UserID,
+		pq.Array(arg.Column2),
+		arg.Limit,
+		arg.Offset,
+	)
 	if err != nil {
 		return nil, err
 	}

@@ -40,3 +40,10 @@
 ## Open Product Decisions
 
 - **Variant model deferred (v1 decision):** The current generic product-attribute model (level, theme, size as labels) is intentionally kept for v1. If any future product attribute changes SKU, inventory, or price semantics (e.g. same book sold in A4 and A3 at different prices with separate stock), it should move from the generic attribute model into a true variant model. Migration would involve: new `product_variants` table, moving `sku`/`price_inr` from `products` to variants, re-pointing `inventory_items` and `cart` to variants, and adding `product_variant_attribute_values`.
+
+## Account and Orders API (TASK-010)
+
+- Addresses (spec fields): address_line1/2, landmark, city, state, pincode, company_name, gst_number, phone, is_default. DB columns: line1, line2, landmark, city, state, postal_code, company_name, gst_number, phone_e164. Setting is_default clears other defaults in one transaction.
+- Order statuses in the API are open/fulfilled/cancelled, mapped from the DB enum (see `services.SpecStatus`). Only pending_payment, paid and packed orders can be cancelled.
+- Order JSON `gst_amount` comes from `tax_inr`; `coupon_code`/`coupon_discount` are null/0 until coupons are stored on orders.
+- Email change: OTP purpose `email_change_otp`, keyed by the new email; email only changes after confirm.

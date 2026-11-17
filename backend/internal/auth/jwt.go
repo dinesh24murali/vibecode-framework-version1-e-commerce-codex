@@ -111,7 +111,6 @@ func (s *JWTService) VerifyOTPToken(tokenStr string) (*OTPClaims, error) {
 		}
 		return s.publicKey, nil
 	})
-	fmt.Println("Can I see this???/")
 	if err != nil {
 		return nil, err
 	}

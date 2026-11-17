@@ -1,7 +1,7 @@
 /** Extracts a human-readable message from a generated-client response. */
 export function errorMessage(res: { data: unknown }, fallback = 'Something went wrong'): string {
-  const d = res.data as { message?: string } | undefined
-  return d?.message || fallback
+  const d = res.data as { message?: string; error?: string } | undefined
+  return d?.message || (typeof d?.error === 'string' ? d.error : '') || fallback
 }
 
 /** Only allow same-origin relative paths to avoid open redirects. */

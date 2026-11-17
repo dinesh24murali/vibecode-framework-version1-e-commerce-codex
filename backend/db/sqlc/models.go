@@ -117,6 +117,10 @@ type Address struct {
 	PhoneE164     sql.NullString `json:"phone_e164"`
 	IsDefault     bool           `json:"is_default"`
 	CreatedAt     time.Time      `json:"created_at"`
+	Landmark      sql.NullString `json:"landmark"`
+	CompanyName   sql.NullString `json:"company_name"`
+	GstNumber     sql.NullString `json:"gst_number"`
+	UpdatedAt     time.Time      `json:"updated_at"`
 }
 
 type AuditEvent struct {

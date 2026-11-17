@@ -6,7 +6,7 @@
 | File | Domain | Summary |
 |------|--------|---------|
 | `memory/project.md` | project | Stack, single `dev` environment, and S3 plus CloudFront frontend hosting notes |; frontend API client codegen (orval)
-| `memory/product.md` | product | Storefront scope, product schema rules, cart and order-address behavior, coupon tracking, and extensible product attributes |
+| `memory/product.md` | product | Storefront scope, product schema rules, cart and order-address behavior, coupon tracking, and extensible product attributes |; account/address/order API mappings
 | `memory/infra.md` | infra | Docker-only toolchain, pgxpool limits, Redis AOF, migration workflow, sqlc codegen, local dev ports |; background worker (Redis Streams)
 | `memory/auth.md` | auth | JWT (Ed25519), token lifetimes, Argon2id params, cookie settings, refresh token rotation, OTP delivery |; frontend Zustand store (tokens in memory, user persisted)
 

@@ -24,34 +24,36 @@ func (q *Queries) ClearDefaultAddresses(ctx context.Context, userID uuid.UUID) e
 }
 
 const createAddress = `-- name: CreateAddress :one
-INSERT INTO addresses (user_id, recipient_name, line1, line2, city, state, postal_code, country_code, phone_e164, is_default)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-RETURNING id, user_id, recipient_name, line1, line2, city, state, postal_code, country_code, phone_e164, is_default, created_at
+INSERT INTO addresses (user_id, line1, line2, landmark, city, state, postal_code, company_name, gst_number, phone_e164, is_default)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+RETURNING id, user_id, recipient_name, line1, line2, city, state, postal_code, country_code, phone_e164, is_default, created_at, landmark, company_name, gst_number, updated_at
 `
 
 type CreateAddressParams struct {
-	UserID        uuid.UUID      `json:"user_id"`
-	RecipientName string         `json:"recipient_name"`
-	Line1         string         `json:"line1"`
-	Line2         sql.NullString `json:"line2"`
-	City          string         `json:"city"`
-	State         string         `json:"state"`
-	PostalCode    string         `json:"postal_code"`
-	CountryCode   string         `json:"country_code"`
-	PhoneE164     sql.NullString `json:"phone_e164"`
-	IsDefault     bool           `json:"is_default"`
+	UserID      uuid.UUID      `json:"user_id"`
+	Line1       string         `json:"line1"`
+	Line2       sql.NullString `json:"line2"`
+	Landmark    sql.NullString `json:"landmark"`
+	City        string         `json:"city"`
+	State       string         `json:"state"`
+	PostalCode  string         `json:"postal_code"`
+	CompanyName sql.NullString `json:"company_name"`
+	GstNumber   sql.NullString `json:"gst_number"`
+	PhoneE164   sql.NullString `json:"phone_e164"`
+	IsDefault   bool           `json:"is_default"`
 }
 
 func (q *Queries) CreateAddress(ctx context.Context, arg CreateAddressParams) (Address, error) {
 	row := q.db.QueryRowContext(ctx, createAddress,
 		arg.UserID,
-		arg.RecipientName,
 		arg.Line1,
 		arg.Line2,
+		arg.Landmark,
 		arg.City,
 		arg.State,
 		arg.PostalCode,
-		arg.CountryCode,
+		arg.CompanyName,
+		arg.GstNumber,
 		arg.PhoneE164,
 		arg.IsDefault,
 	)
@@ -69,6 +71,10 @@ func (q *Queries) CreateAddress(ctx context.Context, arg CreateAddressParams) (A
 		&i.PhoneE164,
 		&i.IsDefault,
 		&i.CreatedAt,
+		&i.Landmark,
+		&i.CompanyName,
+		&i.GstNumber,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
@@ -89,7 +95,7 @@ func (q *Queries) DeleteAddress(ctx context.Context, arg DeleteAddressParams) er
 }
 
 const getAddressByID = `-- name: GetAddressByID :one
-SELECT id, user_id, recipient_name, line1, line2, city, state, postal_code, country_code, phone_e164, is_default, created_at FROM addresses
+SELECT id, user_id, recipient_name, line1, line2, city, state, postal_code, country_code, phone_e164, is_default, created_at, landmark, company_name, gst_number, updated_at FROM addresses
 WHERE id = $1
 `
 
@@ -109,12 +115,50 @@ func (q *Queries) GetAddressByID(ctx context.Context, id uuid.UUID) (Address, er
 		&i.PhoneE164,
 		&i.IsDefault,
 		&i.CreatedAt,
+		&i.Landmark,
+		&i.CompanyName,
+		&i.GstNumber,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getAddressForUser = `-- name: GetAddressForUser :one
+SELECT id, user_id, recipient_name, line1, line2, city, state, postal_code, country_code, phone_e164, is_default, created_at, landmark, company_name, gst_number, updated_at FROM addresses
+WHERE id = $1 AND user_id = $2
+`
+
+type GetAddressForUserParams struct {
+	ID     uuid.UUID `json:"id"`
+	UserID uuid.UUID `json:"user_id"`
+}
+
+func (q *Queries) GetAddressForUser(ctx context.Context, arg GetAddressForUserParams) (Address, error) {
+	row := q.db.QueryRowContext(ctx, getAddressForUser, arg.ID, arg.UserID)
+	var i Address
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.RecipientName,
+		&i.Line1,
+		&i.Line2,
+		&i.City,
+		&i.State,
+		&i.PostalCode,
+		&i.CountryCode,
+		&i.PhoneE164,
+		&i.IsDefault,
+		&i.CreatedAt,
+		&i.Landmark,
+		&i.CompanyName,
+		&i.GstNumber,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
 
 const listAddressesByUser = `-- name: ListAddressesByUser :many
-SELECT id, user_id, recipient_name, line1, line2, city, state, postal_code, country_code, phone_e164, is_default, created_at FROM addresses
+SELECT id, user_id, recipient_name, line1, line2, city, state, postal_code, country_code, phone_e164, is_default, created_at, landmark, company_name, gst_number, updated_at FROM addresses
 WHERE user_id = $1
 ORDER BY is_default DESC, created_at DESC
 `
@@ -141,6 +185,10 @@ func (q *Queries) ListAddressesByUser(ctx context.Context, userID uuid.UUID) ([]
 			&i.PhoneE164,
 			&i.IsDefault,
 			&i.CreatedAt,
+			&i.Landmark,
+			&i.CompanyName,
+			&i.GstNumber,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -159,7 +207,7 @@ const setDefaultAddress = `-- name: SetDefaultAddress :one
 UPDATE addresses
 SET is_default = true
 WHERE id = $1 AND user_id = $2
-RETURNING id, user_id, recipient_name, line1, line2, city, state, postal_code, country_code, phone_e164, is_default, created_at
+RETURNING id, user_id, recipient_name, line1, line2, city, state, postal_code, country_code, phone_e164, is_default, created_at, landmark, company_name, gst_number, updated_at
 `
 
 type SetDefaultAddressParams struct {
@@ -183,47 +231,60 @@ func (q *Queries) SetDefaultAddress(ctx context.Context, arg SetDefaultAddressPa
 		&i.PhoneE164,
 		&i.IsDefault,
 		&i.CreatedAt,
+		&i.Landmark,
+		&i.CompanyName,
+		&i.GstNumber,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
 
 const updateAddress = `-- name: UpdateAddress :one
 UPDATE addresses
-SET recipient_name = $2,
-    line1          = $3,
-    line2          = $4,
-    city           = $5,
-    state          = $6,
-    postal_code    = $7,
-    country_code   = $8,
-    phone_e164     = $9
-WHERE id = $1
-RETURNING id, user_id, recipient_name, line1, line2, city, state, postal_code, country_code, phone_e164, is_default, created_at
+SET line1        = $3,
+    line2        = $4,
+    landmark     = $5,
+    city         = $6,
+    state        = $7,
+    postal_code  = $8,
+    company_name = $9,
+    gst_number   = $10,
+    phone_e164   = $11,
+    is_default   = $12,
+    updated_at   = now()
+WHERE id = $1 AND user_id = $2
+RETURNING id, user_id, recipient_name, line1, line2, city, state, postal_code, country_code, phone_e164, is_default, created_at, landmark, company_name, gst_number, updated_at
 `
 
 type UpdateAddressParams struct {
-	ID            uuid.UUID      `json:"id"`
-	RecipientName string         `json:"recipient_name"`
-	Line1         string         `json:"line1"`
-	Line2         sql.NullString `json:"line2"`
-	City          string         `json:"city"`
-	State         string         `json:"state"`
-	PostalCode    string         `json:"postal_code"`
-	CountryCode   string         `json:"country_code"`
-	PhoneE164     sql.NullString `json:"phone_e164"`
+	ID          uuid.UUID      `json:"id"`
+	UserID      uuid.UUID      `json:"user_id"`
+	Line1       string         `json:"line1"`
+	Line2       sql.NullString `json:"line2"`
+	Landmark    sql.NullString `json:"landmark"`
+	City        string         `json:"city"`
+	State       string         `json:"state"`
+	PostalCode  string         `json:"postal_code"`
+	CompanyName sql.NullString `json:"company_name"`
+	GstNumber   sql.NullString `json:"gst_number"`
+	PhoneE164   sql.NullString `json:"phone_e164"`
+	IsDefault   bool           `json:"is_default"`
 }
 
 func (q *Queries) UpdateAddress(ctx context.Context, arg UpdateAddressParams) (Address, error) {
 	row := q.db.QueryRowContext(ctx, updateAddress,
 		arg.ID,
-		arg.RecipientName,
+		arg.UserID,
 		arg.Line1,
 		arg.Line2,
+		arg.Landmark,
 		arg.City,
 		arg.State,
 		arg.PostalCode,
-		arg.CountryCode,
+		arg.CompanyName,
+		arg.GstNumber,
 		arg.PhoneE164,
+		arg.IsDefault,
 	)
 	var i Address
 	err := row.Scan(
@@ -239,6 +300,10 @@ func (q *Queries) UpdateAddress(ctx context.Context, arg UpdateAddressParams) (A
 		&i.PhoneE164,
 		&i.IsDefault,
 		&i.CreatedAt,
+		&i.Landmark,
+		&i.CompanyName,
+		&i.GstNumber,
+		&i.UpdatedAt,
 	)
 	return i, err
 }

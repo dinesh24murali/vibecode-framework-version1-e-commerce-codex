@@ -9,6 +9,7 @@ Format: `- [YYYY-MM-DD] <task-name>: <one-line summary>`
 
 ## Unreleased
 
+- [2026-11-17] task-010-account-management: feat: account profile/password/email-change, address CRUD, order list/get/cancel endpoints and 3-tab account page; fix: removed debug prints that panicked on successful registration
 - [2026-11-17] task-009-auth-pages-signup-login-facebook: feat: signup (email, OTP, password), login with ?redirect=, Facebook login button, Playwright auth e2e with mocked API, Playwright config
 - [2026-11-17] task-040-background-worker-scaffold: feat: cmd/worker Redis Streams consumer (XREADGROUP, XACK, exponential backoff, dead-letter, idempotency keys), handler registry with Phase 2 stubs, worker compose service
 - [2026-11-17] task-007-openapi-client-codegen-frontend: feat: orval-generated API client (lib/api/generated), base client with Bearer injection, cart slice wired to generated cart API, no-raw-fetch check in make verify
