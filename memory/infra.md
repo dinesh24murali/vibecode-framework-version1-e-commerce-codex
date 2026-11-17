@@ -63,3 +63,7 @@
 - Stream `jobs`, consumer group `workers`, dead-letter stream `jobs:dead-letter`. Job fields: `id`, `type`, `payload`, `attempts`.
 - Failure: retry up to 3 times (backoff 1s doubling, cap 60s), then dead-letter. Stale pending entries reclaimed with XAUTOCLAIM (1 min idle).
 - Idempotency: Redis key `job:done:<id>` (7d TTL) skips replays. Register handlers via `worker.Dispatcher.Register`; Phase 2 stubs live in `internal/worker/handlers/stubs.go`.
+
+## Image uploads (TASK-013)
+
+- `POST /api/v1/admin/upload/image/presign` (admin only): returns a presigned S3 PUT (5 min, content type and length signed) plus the CDN `public_url` that gets stored on products. Env: `S3_BUCKET`, `AWS_REGION`, `CDN_BASE_URL`, standard AWS credentials. Empty `S3_BUCKET` disables it (503). `auth.RequireRole` guards admin routes (403 for non-admin).

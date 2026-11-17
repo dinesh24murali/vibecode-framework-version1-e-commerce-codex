@@ -49,3 +49,16 @@ func Middleware(jwtSvc *JWTService) gin.HandlerFunc {
 		c.Next()
 	}
 }
+
+// RequireRole aborts with 403 Forbidden unless the authenticated user has the given role.
+// It must run after Middleware.
+func RequireRole(role string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		got, _ := c.Get(ContextUserRole)
+		if s, _ := got.(string); s != role {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"code": http.StatusForbidden, "message": "forbidden"})
+			return
+		}
+		c.Next()
+	}
+}

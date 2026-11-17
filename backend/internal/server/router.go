@@ -1,6 +1,8 @@
 package server
 
 import (
+	"context"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -62,6 +64,16 @@ func newRouter(deps RouterDeps) *gin.Engine {
 	productHandler := handlers.NewProductHandler(productSvc)
 	categoryHandler := handlers.NewCategoryHandler(productSvc)
 
+	var storage services.StorageService = services.DisabledStorage{}
+	if deps.Config.S3Bucket != "" {
+		s3a, err := services.NewS3Adapter(context.Background(), deps.Config.S3Bucket, deps.Config.S3Region, deps.Config.CDNBaseURL)
+		if err != nil {
+			panic("router: failed to initialise S3 adapter: " + err.Error())
+		}
+		storage = s3a
+	}
+	uploadHandler := handlers.NewUploadHandler(storage)
+
 	v1 := r.Group("/api/v1")
 
 	// Public catalogue routes — no middleware.
@@ -94,6 +106,9 @@ func newRouter(deps RouterDeps) *gin.Engine {
 	protected := v1.Group("", auth.Middleware(jwtSvc))
 	{
 		protected.POST("/auth/logout", authHandler.Logout)
+
+		admin := protected.Group("/admin", auth.RequireRole("admin"))
+		admin.POST("/upload/image/presign", uploadHandler.Presign)
 
 		acct := protected.Group("/account")
 		acct.GET("/profile", accountHandler.GetProfile)

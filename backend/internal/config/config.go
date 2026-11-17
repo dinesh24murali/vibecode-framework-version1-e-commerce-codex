@@ -29,6 +29,12 @@ type Config struct {
 	// Port is the TCP port the HTTP server listens on. Defaults to "8080".
 	Port string
 
+	// S3Bucket, S3Region and CDNBaseURL configure product image uploads. All are
+	// optional: without S3Bucket the presign endpoint answers 503.
+	S3Bucket   string
+	S3Region   string
+	CDNBaseURL string
+
 	// CORSAllowedOrigins is a comma-separated list of exact allowed origins.
 	// Wildcards are not permitted per architecture constraints.
 	CORSAllowedOrigins []string
@@ -64,6 +70,9 @@ func (a *EnvAdapter) Load() *Config {
 		JWTPrivateKey: get("JWT_PRIVATE_KEY"),
 		JWTPublicKey:  get("JWT_PUBLIC_KEY"),
 		Port:          os.Getenv("PORT"),
+		S3Bucket:      os.Getenv("S3_BUCKET"),
+		S3Region:      os.Getenv("AWS_REGION"),
+		CDNBaseURL:    os.Getenv("CDN_BASE_URL"),
 	}
 
 	corsRaw := get("CORS_ALLOWED_ORIGINS")
