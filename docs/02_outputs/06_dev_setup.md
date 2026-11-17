@@ -399,7 +399,7 @@ Migration rules:
 make adr SLUG=use-redis-streams-for-queue
 ```
 
-This copies `adr/template.md` to `adr/NNNN-use-redis-streams-for-queue.md`. Fill in the context, decision, and consequences. Set status to `Accepted` once the decision is final.
+This copies `adr/template.md` to `adr/NNNN-use-redis-streams-for-queue.md`. The new ADR is created already `Accepted` (ADRs are auto-approved) with today's date and its number filled in. Fill in the context, decision, and consequences, then continue working — no approval step is needed.
 
 Do not modify an `Accepted` ADR. If a decision changes, create a new ADR that supersedes the old one and update its status field.
 

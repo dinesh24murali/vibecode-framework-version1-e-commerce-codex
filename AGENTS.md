@@ -60,6 +60,7 @@ These rules apply regardless of which AI tool is in use.
 - Use the naming convention: `adr/NNNN-short-slug.md`
 - Use `adr/template.md` as the base
 - Reference the ADR in related task files
+- ADRs are **auto-accepted**: create them with status `Accepted` and continue working — never pause for ADR approval (see `adr/AGENTS.md`)
 
 ### 3.4 Memory Files
 - Keep `memory/<domain>.md` files updated when domain knowledge changes

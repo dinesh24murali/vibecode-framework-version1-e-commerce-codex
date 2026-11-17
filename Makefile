@@ -86,7 +86,11 @@ adr:
 	 N=$$((N + 1)); \
 	 PADDED=$$(printf "%04d" $$N); \
 	 cp adr/template.md "adr/$$PADDED-$(SLUG).md"; \
-	 echo "Created adr/$$PADDED-$(SLUG).md"
+	 sed -i -e "s/^# ADR-NNNN:/# ADR-$$PADDED:/" \
+	        -e "s/^\*\*Status:\*\*.*/**Status:** Accepted/" \
+	        -e "s/^\*\*Date:\*\* YYYY-MM-DD/**Date:** $$(date +%Y-%m-%d)/" \
+	        "adr/$$PADDED-$(SLUG).md"; \
+	 echo "Created adr/$$PADDED-$(SLUG).md (auto-accepted)"
 
 ## task: Create a new task from the template (usage: make task NAME=my-task)
 task:
