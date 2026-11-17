@@ -168,6 +168,11 @@ func newRouter(deps RouterDeps) *gin.Engine {
 	admin.PUT("/categories/:id", adminCat.Update)
 	admin.DELETE("/categories/:id", adminCat.Delete)
 
+	adminOrd := handlers.NewAdminOrderHandler(services.NewAdminOrderService(repositories.NewAdminOrderRepository(deps.Pool), userRepo))
+	admin.GET("/orders", adminOrd.List)
+	admin.GET("/orders/:id", adminOrd.Get)
+	admin.PUT("/orders/:id/status", adminOrd.UpdateStatus)
+
 	// Protected auth route — requires valid access token.
 	// Razorpay calls this without a JWT; the HMAC signature is the authentication.
 	v1.POST("/payments/webhooks/razorpay", paymentHandler.Webhook)

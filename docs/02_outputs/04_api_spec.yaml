@@ -1772,7 +1772,7 @@ paths:
     put:
       tags: [admin-orders]
       operationId: adminUpdateOrderStatus
-      summary: Update order status to open, fulfilled, or cancelled (admin)
+      summary: Update order status to fulfilled or cancelled (admin); invalid transitions return 422
       security:
         - BearerAuth: []
       parameters:
@@ -4275,6 +4275,12 @@ components:
           description: Line items in this order
           items:
             $ref: "#/components/schemas/OrderItem"
+        customer_name:
+          type: string
+          description: Name of the customer who placed the order (populated on admin endpoints only)
+        customer_email:
+          type: string
+          description: Email of the customer who placed the order (populated on admin endpoints only)
         shipping_address:
           $ref: "#/components/schemas/Address"
         subtotal:

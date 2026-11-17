@@ -13,6 +13,69 @@ import (
 	"github.com/lib/pq"
 )
 
+const adminCountOrders = `-- name: AdminCountOrders :one
+SELECT count(*) FROM orders
+WHERE (cardinality($1::order_status[]) = 0 OR status = ANY($1::order_status[]))
+`
+
+func (q *Queries) AdminCountOrders(ctx context.Context, statuses []OrderStatus) (int64, error) {
+	row := q.db.QueryRowContext(ctx, adminCountOrders, pq.Array(statuses))
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const adminListOrders = `-- name: AdminListOrders :many
+SELECT id, user_id, order_number, status, subtotal_inr, shipping_inr, tax_inr, total_inr, currency_code, placed_at, created_at, updated_at, coupon_code, coupon_discount_inr FROM orders
+WHERE (cardinality($1::order_status[]) = 0 OR status = ANY($1::order_status[]))
+ORDER BY created_at DESC, id
+LIMIT $3 OFFSET $2
+`
+
+type AdminListOrdersParams struct {
+	Statuses   []OrderStatus `json:"statuses"`
+	PageOffset int32         `json:"page_offset"`
+	PageLimit  int32         `json:"page_limit"`
+}
+
+func (q *Queries) AdminListOrders(ctx context.Context, arg AdminListOrdersParams) ([]Order, error) {
+	rows, err := q.db.QueryContext(ctx, adminListOrders, pq.Array(arg.Statuses), arg.PageOffset, arg.PageLimit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Order
+	for rows.Next() {
+		var i Order
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.OrderNumber,
+			&i.Status,
+			&i.SubtotalInr,
+			&i.ShippingInr,
+			&i.TaxInr,
+			&i.TotalInr,
+			&i.CurrencyCode,
+			&i.PlacedAt,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.CouponCode,
+			&i.CouponDiscountInr,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const countOrdersByUserFiltered = `-- name: CountOrdersByUserFiltered :one
 SELECT count(*) FROM orders
 WHERE user_id = $1

@@ -35,3 +35,13 @@ LIMIT $3 OFFSET $4;
 SELECT count(*) FROM orders
 WHERE user_id = $1
   AND (cardinality($2::order_status[]) = 0 OR status = ANY($2::order_status[]));
+
+-- name: AdminListOrders :many
+SELECT * FROM orders
+WHERE (cardinality(sqlc.arg(statuses)::order_status[]) = 0 OR status = ANY(sqlc.arg(statuses)::order_status[]))
+ORDER BY created_at DESC, id
+LIMIT sqlc.arg(page_limit) OFFSET sqlc.arg(page_offset);
+
+-- name: AdminCountOrders :one
+SELECT count(*) FROM orders
+WHERE (cardinality(sqlc.arg(statuses)::order_status[]) = 0 OR status = ANY(sqlc.arg(statuses)::order_status[]));

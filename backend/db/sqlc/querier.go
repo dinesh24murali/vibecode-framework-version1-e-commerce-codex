@@ -12,10 +12,12 @@ import (
 )
 
 type Querier interface {
+	AdminCountOrders(ctx context.Context, statuses []OrderStatus) (int64, error)
 	// Admin product management (includes inactive products).
 	AdminCountProducts(ctx context.Context, query sql.NullString) (int64, error)
 	AdminCreateCategory(ctx context.Context, arg AdminCreateCategoryParams) (Category, error)
 	AdminDeleteCategory(ctx context.Context, id uuid.UUID) (int64, error)
+	AdminListOrders(ctx context.Context, arg AdminListOrdersParams) ([]Order, error)
 	AdminListProducts(ctx context.Context, arg AdminListProductsParams) ([]AdminListProductsRow, error)
 	AdminUpdateCategory(ctx context.Context, arg AdminUpdateCategoryParams) (Category, error)
 	AdminUpdateProduct(ctx context.Context, arg AdminUpdateProductParams) (AdminUpdateProductRow, error)

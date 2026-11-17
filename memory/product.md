@@ -117,3 +117,10 @@ Order lifecycle: pending_payment -> (webhook payment.captured) paid, or payment_
 - `/api/v1/admin/categories[...]` (5 endpoints) via `AdminCategoryService`; slug validated `^[a-z0-9]+(-[a-z0-9]+)*$`, unique (409). The spec's 12-value `Category.slug` enum was removed so admins can add categories.
 - Delete returns 409 if any product (active or not) references the category; otherwise 200 `{message}`.
 - UI: `/admin/categories/` table with `CategoryFormModal` (slug auto-fills from name until edited).
+
+## Admin orders (TASK-029)
+
+- `GET /admin/orders` (status=open|fulfilled|cancelled, 20/page default), `GET /admin/orders/{id}`, `PUT /admin/orders/{id}/status` via `AdminOrderService`. Order responses add `customer_name`/`customer_email`.
+- Status mapping: fulfilled = DB `delivered`; cancelled = DB `cancelled` (list filter also includes payment_failed/refunded). Only open-class orders can change; fulfilling an unpaid (`pending_payment`) order, targeting `open`, or changing a final order returns 422.
+- Admin cancel does not release reserved stock (same as customer cancel) until a stock-release job exists.
+- UI: `/admin/orders/` with status tabs, pagination and `OrderDetailModal` (fetches by id).

@@ -29,7 +29,7 @@ Order: 000, 008, 007, 040, 009 ... 038. Status: todo/done/blocked.
 | 026 | done | Spec amended: value delete returns 409 if assigned (was cascade). Definition delete still cascades. sqlc regenerated with v1.31.1 (header churn). |
 | 027 | done | One category stored per product (first of category_ids); sku = slug; no attribute-assignment UI yet (API tested). Spec: 409 added to create/update. |
 | 028 | done | Removed 12-value Category.slug enum from spec. Delete blocked (409) by any linked product incl. inactive. No image_url UI. |
-| 029 | todo | |
+| 029 | done | Spec: Order gains optional customer_name/customer_email. Invalid transitions 422. Admin cancel does not release reserved stock (no release job yet). |
 | 041 | todo | |
 | 030 | todo | |
 | 031 | todo | |

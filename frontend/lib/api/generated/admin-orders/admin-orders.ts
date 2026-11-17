@@ -214,7 +214,7 @@ export const getAdminUpdateOrderStatusUrl = (id: string,) => {
 }
 
 /**
- * @summary Update order status to open, fulfilled, or cancelled (admin)
+ * @summary Update order status to fulfilled or cancelled (admin); invalid transitions return 422
  */
 export const adminUpdateOrderStatus = async (id: string,
     updateOrderStatusRequest: UpdateOrderStatusRequest, options?: Parameters<typeof apiFetch>[1]): Promise<adminUpdateOrderStatusResponse> => {

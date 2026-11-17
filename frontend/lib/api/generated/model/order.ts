@@ -21,6 +21,10 @@ export interface Order {
   status: OrderStatus;
   /** Line items in this order */
   items: OrderItem[];
+  /** Name of the customer who placed the order (populated on admin endpoints only) */
+  customer_name?: string;
+  /** Email of the customer who placed the order (populated on admin endpoints only) */
+  customer_email?: string;
   shipping_address: Address;
   /** Sum of all line totals before coupon and tax (INR) */
   subtotal: number;
