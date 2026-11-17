@@ -44,6 +44,8 @@ tags:
     description: Admin order management (admin role)
   - name: attributes
     description: Public attribute filter options (level, size, theme, etc.)
+  - name: admin-coupons
+    description: Admin coupon management (admin role)
   - name: admin-attributes
     description: Admin attribute definition and value management (admin role)
 
@@ -1800,6 +1802,159 @@ paths:
           $ref: "#/components/responses/NotFound"
         "422":
           $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  # ---------------------------------------------------------------------------
+  # Admin Coupons
+  # ---------------------------------------------------------------------------
+
+  /api/v1/admin/coupons:
+    get:
+      tags: [admin-coupons]
+      operationId: adminListCoupons
+      summary: Paginated list of all coupons (admin)
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/QueryPage"
+        - $ref: "#/components/parameters/QueryLimit"
+      responses:
+        "200":
+          description: Paginated coupons
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Coupon"
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      tags: [admin-coupons]
+      operationId: adminCreateCoupon
+      summary: Create a coupon (admin)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCouponRequest"
+      responses:
+        "201":
+          description: Coupon created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Coupon"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/v1/admin/coupons/{id}:
+    get:
+      tags: [admin-coupons]
+      operationId: adminGetCoupon
+      summary: Get a single coupon (admin)
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PathId"
+      responses:
+        "200":
+          description: Coupon
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Coupon"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    put:
+      tags: [admin-coupons]
+      operationId: adminUpdateCoupon
+      summary: Update a coupon; all fields optional (admin)
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PathId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCouponRequest"
+      responses:
+        "200":
+          description: Coupon updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Coupon"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      tags: [admin-coupons]
+      operationId: adminDeleteCoupon
+      summary: Delete a coupon (admin)
+      description: Returns 409 Conflict when the coupon has already been redeemed (disable it instead).
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PathId"
+      responses:
+        "200":
+          description: Coupon deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
         "500":
           $ref: "#/components/responses/InternalServerError"
 
@@ -3591,6 +3746,95 @@ components:
           example: "db0e8400-e29b-41d4-a716-446655440021"
       example:
         attribute_value_id: "db0e8400-e29b-41d4-a716-446655440021"
+
+    Coupon:
+      type: object
+      description: A discount coupon. `type` gates which of `flat` (INR amount) or `percent` (1-100) is set.
+      required: [id, name, code, is_enable, type, flat, percent, coupon_expiry, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: ["string", "null"]
+        code:
+          type: string
+          description: Unique, stored upper-case
+        is_enable:
+          type: boolean
+        type:
+          type: string
+          enum: [flat, percentage]
+        flat:
+          type: ["integer", "null"]
+          description: INR amount off; set only when type is flat
+        percent:
+          type: ["integer", "null"]
+          description: Percentage off (1-100); set only when type is percentage
+        coupon_expiry:
+          type: ["string", "null"]
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateCouponRequest:
+      type: object
+      description: Create a coupon. Provide `flat` when type is flat, `percent` when type is percentage.
+      required: [name, code, type]
+      properties:
+        name:
+          type: string
+        description:
+          type: ["string", "null"]
+        code:
+          type: string
+          description: Letters, digits, dash or underscore; stored upper-case
+        is_enable:
+          type: boolean
+          description: Default true
+        type:
+          type: string
+          enum: [flat, percentage]
+        flat:
+          type: integer
+          minimum: 1
+        percent:
+          type: integer
+          minimum: 1
+          maximum: 100
+        coupon_expiry:
+          type: ["string", "null"]
+          format: date-time
+
+    UpdateCouponRequest:
+      type: object
+      description: Update a coupon; all fields optional. The code is immutable.
+      properties:
+        name:
+          type: string
+        description:
+          type: ["string", "null"]
+        is_enable:
+          type: boolean
+        type:
+          type: string
+          enum: [flat, percentage]
+        flat:
+          type: integer
+          minimum: 1
+        percent:
+          type: integer
+          minimum: 1
+          maximum: 100
+        coupon_expiry:
+          type: ["string", "null"]
+          format: date-time
 
     AttributeDefinition:
       type: object

@@ -173,6 +173,13 @@ func newRouter(deps RouterDeps) *gin.Engine {
 	admin.GET("/orders/:id", adminOrd.Get)
 	admin.PUT("/orders/:id/status", adminOrd.UpdateStatus)
 
+	adminCoupon := handlers.NewAdminCouponHandler(services.NewAdminCouponService(repositories.NewCouponAdminRepository(deps.Pool)))
+	admin.GET("/coupons", adminCoupon.List)
+	admin.POST("/coupons", adminCoupon.Create)
+	admin.GET("/coupons/:id", adminCoupon.Get)
+	admin.PUT("/coupons/:id", adminCoupon.Update)
+	admin.DELETE("/coupons/:id", adminCoupon.Delete)
+
 	// Protected auth route — requires valid access token.
 	// Razorpay calls this without a JWT; the HMAC signature is the authentication.
 	v1.POST("/payments/webhooks/razorpay", paymentHandler.Webhook)

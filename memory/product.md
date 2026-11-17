@@ -124,3 +124,10 @@ Order lifecycle: pending_payment -> (webhook payment.captured) paid, or payment_
 - Status mapping: fulfilled = DB `delivered`; cancelled = DB `cancelled` (list filter also includes payment_failed/refunded). Only open-class orders can change; fulfilling an unpaid (`pending_payment`) order, targeting `open`, or changing a final order returns 422.
 - Admin cancel does not release reserved stock (same as customer cancel) until a stock-release job exists.
 - UI: `/admin/orders/` with status tabs, pagination and `OrderDetailModal` (fetches by id).
+
+## Admin coupons (TASK-041)
+
+- `/api/v1/admin/coupons[...]` (5 endpoints, added to the spec in this task) via `AdminCouponService` + `CouponAdminRepository`.
+- Codes are upper-cased and immutable; `type` gates the amount: `flat` stores `flat` (percent NULL), `percentage` stores `percent` 1-100 (flat NULL). `coupon_expiry: null` on update clears the expiry.
+- Delete returns 409 once any `coupon_users` row exists (disable the coupon instead).
+- UI: `/admin/coupons/` with enable/disable toggle and `CouponFormModal`.

@@ -2,6 +2,7 @@ export * from './account/account';
 export * from './admin-attributes/admin-attributes';
 export * from './admin-auth/admin-auth';
 export * from './admin-categories/admin-categories';
+export * from './admin-coupons/admin-coupons';
 export * from './admin-orders/admin-orders';
 export * from './admin-products/admin-products';
 export * from './admin-upload/admin-upload';

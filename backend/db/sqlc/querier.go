@@ -20,6 +20,7 @@ type Querier interface {
 	AdminListOrders(ctx context.Context, arg AdminListOrdersParams) ([]Order, error)
 	AdminListProducts(ctx context.Context, arg AdminListProductsParams) ([]AdminListProductsRow, error)
 	AdminUpdateCategory(ctx context.Context, arg AdminUpdateCategoryParams) (Category, error)
+	AdminUpdateCoupon(ctx context.Context, arg AdminUpdateCouponParams) (Coupon, error)
 	AdminUpdateProduct(ctx context.Context, arg AdminUpdateProductParams) (AdminUpdateProductRow, error)
 	AssignAttributeToProduct(ctx context.Context, arg AssignAttributeToProductParams) (ProductAttributeAssignment, error)
 	AssignProductAttributeValue(ctx context.Context, arg AssignProductAttributeValueParams) error
@@ -34,6 +35,9 @@ type Querier interface {
 	//   sort            price_asc | price_desc | newest | popular (popular falls back to newest until sales data exists)
 	CountCatalogProducts(ctx context.Context, arg CountCatalogProductsParams) (int64, error)
 	CountCategories(ctx context.Context) (int64, error)
+	CountCouponRedemptions(ctx context.Context, couponID uuid.UUID) (int64, error)
+	// Admin coupon management.
+	CountCoupons(ctx context.Context) (int64, error)
 	CountOrdersByUserFiltered(ctx context.Context, arg CountOrdersByUserFilteredParams) (int64, error)
 	CountProductsInCategory(ctx context.Context, categoryID uuid.UUID) (int64, error)
 	CreateAddress(ctx context.Context, arg CreateAddressParams) (Address, error)
@@ -60,6 +64,7 @@ type Querier interface {
 	DeleteAttributeValue(ctx context.Context, arg DeleteAttributeValueParams) (int64, error)
 	DeleteCartItem(ctx context.Context, arg DeleteCartItemParams) error
 	DeleteCartItemByID(ctx context.Context, arg DeleteCartItemByIDParams) (int64, error)
+	DeleteCoupon(ctx context.Context, id uuid.UUID) (int64, error)
 	DeleteExpiredTokens(ctx context.Context) error
 	DeleteImagesByProductID(ctx context.Context, productID uuid.UUID) error
 	DeleteProductImage(ctx context.Context, id uuid.UUID) error

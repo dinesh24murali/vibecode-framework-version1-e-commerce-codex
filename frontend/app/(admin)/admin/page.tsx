@@ -13,6 +13,11 @@ export default function AdminHomePage() {
       <nav aria-label="Admin sections">
         <ul className="list-disc pl-5 text-sm">
           <li>
+            <Link href="/admin/coupons/" className="underline">
+              Coupons
+            </Link>
+          </li>
+          <li>
             <Link href="/admin/orders/" className="underline">
               Orders
             </Link>
