@@ -58,7 +58,7 @@
 ```bash
 # Fill in with actual commands for Go 1.26
 # Example for Go:
-# cd backend && go run ./cmd/server
+make server-dev   # docker compose up postgres redis mailhog api
 ```
 
 ## Running Tests
@@ -66,7 +66,7 @@
 ```bash
 # Fill in with actual test commands
 # Example for Go:
-# cd backend && go test ./...
+make go-test   # also: make go-build, make go-lint, make migrate-up, make sqlc-gen
 ```
 
 ---

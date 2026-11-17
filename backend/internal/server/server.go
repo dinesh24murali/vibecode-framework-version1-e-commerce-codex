@@ -26,11 +26,11 @@ const (
 // Methods are chainable and return the same builder for fluency.
 type ServerBuilder struct {
 	cfg          *config.Config
+	pool         *pgxpool.Pool
+	redis        *redis.Client
 	readTimeout  time.Duration
 	writeTimeout time.Duration
 	idleTimeout  time.Duration
-	pool         *pgxpool.Pool
-	redis        *redis.Client
 }
 
 // NewServerBuilder returns a ServerBuilder populated with defaults.

@@ -57,7 +57,7 @@
 ```bash
 # Fill in with actual commands for NextJS 16 Static Site Generation
 # Example for Next.js:
-# cd frontend && npm run dev
+make fe-build   # also: make fe-lint, make codegen, make verify
 ```
 
 ## Running Tests
@@ -65,7 +65,7 @@
 ```bash
 # Fill in with actual test commands
 # Example:
-# cd frontend && npm test
+make fe-lint
 ```
 
 ---

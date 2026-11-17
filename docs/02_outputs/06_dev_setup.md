@@ -18,6 +18,12 @@
 
 ---
 
+## Docker-only toolchain
+
+All Go, Node, sqlc, goose, golangci-lint, Playwright and Terraform commands run in containers defined in `docker-compose.tools.yml`; Go, Node, goose and sqlc do not need to be installed on the host (only Docker, Git and Make). Common targets: `make go-build`, `make go-test`, `make go-lint`, `make fe-build`, `make fe-lint`, `make migrate-up`, `make sqlc-gen`, `make codegen`, `make verify`. Raw form: `docker compose -f docker-compose.yml -f docker-compose.tools.yml run --rm <go|node|e2e|tf> <cmd>`. This section overrides any host-tool commands shown below. Postgres data lives in the `postgres18_data` volume (mounted at `/var/lib/postgresql`, required by the Postgres 18 image).
+
+---
+
 ## 1. Prerequisites
 
 Install the following tools before cloning the repository. Versions listed are minimums.

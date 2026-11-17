@@ -49,10 +49,10 @@ const (
 
 // AuthTokens holds the values returned to the handler after a successful login.
 type AuthTokens struct {
+	User         *dbsqlc.User
 	AccessToken  string
 	RefreshToken string // raw opaque value (before hashing)
 	ExpiresIn    int    // seconds
-	User         *dbsqlc.User
 }
 
 // AuthService implements all authentication flows.
@@ -112,7 +112,6 @@ func (s *AuthService) RegisterVerifyOTP(ctx context.Context, email, otp string) 
 // RegisterComplete creates the user account and issues auth tokens.
 func (s *AuthService) RegisterComplete(ctx context.Context, otpToken, firstName, lastName, password, clientIP, userAgent string) (*AuthTokens, error) {
 	claims, err := s.jwtSvc.VerifyOTPToken(otpToken)
-	fmt.Println("What calims!!!")
 	if err != nil {
 		return nil, ErrInvalidOTPToken
 	}
@@ -131,7 +130,6 @@ func (s *AuthService) RegisterComplete(ctx context.Context, otpToken, firstName,
 	if err != nil {
 		return nil, fmt.Errorf("register complete: hash password: %w", err)
 	}
-	fmt.Println("What service!!!")
 
 	user, err := s.users.Create(ctx, dbsqlc.CreateUserParams{
 		Email:        email,
@@ -142,8 +140,6 @@ func (s *AuthService) RegisterComplete(ctx context.Context, otpToken, firstName,
 	if err != nil {
 		return nil, fmt.Errorf("register complete: create user: %w", err)
 	}
-	fmt.Println("Whee is it?")
-	fmt.Println("Registraion complete!")
 
 	return s.issueTokens(ctx, user, clientIP, userAgent)
 }
@@ -206,8 +202,8 @@ func (s *AuthService) Refresh(ctx context.Context, rawToken, clientIP, userAgent
 	}
 
 	// Revoke the consumed token before issuing a new one.
-	if err := s.tokens.Revoke(ctx, stored.ID); err != nil {
-		return nil, fmt.Errorf("refresh: revoke old token: %w", err)
+	if revokeErr := s.tokens.Revoke(ctx, stored.ID); revokeErr != nil {
+		return nil, fmt.Errorf("refresh: revoke old token: %w", revokeErr)
 	}
 
 	user, err := s.users.GetByID(ctx, stored.UserID)

@@ -50,3 +50,9 @@
 | Redis      | 6379 |
 | MailHog SMTP | 1025 |
 | MailHog UI | 8025 |
+
+## Docker-only toolchain (task 000)
+- All go/node/sqlc/goose/lint/playwright/terraform commands run via `docker-compose.tools.yml` (services go, node, e2e, static, tf; profile `tools`). Inside containers use service hostnames, not localhost.
+- Postgres 18 volume is `postgres18_data` mounted at `/var/lib/postgresql` (the old `postgres_data` volume is unused).
+- `make` is not installed on the Windows host; run the raw `docker compose -f docker-compose.yml -f docker-compose.tools.yml run --rm <svc> <cmd>` form with `MSYS_NO_PATHCONV=1`.
+- Frontend static export is served by the `static` busybox service at http://static:3000; Playwright deps install to /opt/tools in the e2e container.

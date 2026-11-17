@@ -1,5 +1,6 @@
 .PHONY: dev build test seed migrate migrate-up migrate-down migrate-status \
-        sqlc-gen codegen verify adr task scaffold check-env init help server-dev
+        sqlc-gen codegen verify adr task scaffold check-env init help server-dev \
+        go-build go-test go-lint fe-build fe-lint fe-install tools-build
 
 # Load .env if present so DATABASE_URL and friends are available to migrate targets.
 ifneq (,$(wildcard .env))
@@ -7,34 +8,70 @@ ifneq (,$(wildcard .env))
   export
 endif
 
+# All Go/Node/sqlc/goose/playwright commands run in containers (see docker-compose.tools.yml).
+# Git Bash on Windows mangles absolute container paths, so disable path conversion.
+export MSYS_NO_PATHCONV=1
+DC    := docker compose -f docker-compose.yml -f docker-compose.tools.yml
+GO    := $(DC) run --rm go
+NODE  := $(DC) run --rm node
+E2E   := $(DC) run --rm e2e
+
 # ─── Local Development ────────────────────────────────────────────────────────
 
-## dev: Start backend and frontend dev servers concurrently
+## tools-build: Build the Go tools image (go, sqlc, goose, golangci-lint)
+tools-build:
+	$(DC) build go
+
+## dev: Start postgres, redis, mailhog, api and frontend via Docker Compose
 dev:
-	@echo "Starting backend and frontend dev servers..."
-	@trap 'kill 0' INT; \
-	  (cd backend && go run ./cmd/api) & \
-	  (cd frontend && npm run dev) & \
-	  wait
+	docker compose up -d postgres redis mailhog api frontend
 
 ## build: Build all Docker images via Docker Compose
 build:
 	docker compose build
 
 server-dev:
-	cd backend && go run ./cmd/api
+	docker compose up -d postgres redis mailhog api
+
+# ─── Go (containerised) ──────────────────────────────────────────────────────
+
+## go-build: go build ./... in the go container
+go-build:
+	$(GO) go build ./...
+
+## go-test: go test ./... in the go container
+go-test:
+	$(GO) go test ./...
+
+## go-lint: golangci-lint run in the go container
+go-lint:
+	$(GO) golangci-lint run
+
+# ─── Frontend (containerised) ────────────────────────────────────────────────
+
+## fe-install: npm ci in the node container (node_modules is a named volume)
+fe-install:
+	$(NODE) npm ci
+
+## fe-build: Static export build of the frontend
+fe-build: fe-install
+	$(NODE) npm run build
+
+## fe-lint: Type-check the frontend (next lint was removed in Next 16)
+fe-lint: fe-install
+	$(NODE) npx tsc --noEmit
 
 # ─── Testing ─────────────────────────────────────────────────────────────────
 
 ## test: Run all backend unit and integration tests
-test:
-	cd backend && go test ./...
+test: go-test
 
-## verify: Run all verification checks (e2e + DOM)
-verify:
+## verify: Build the static export, serve it, run e2e + DOM checks (all in containers)
+verify: fe-build
 	@echo "Running verification..."
-	@bash verify/scripts/run-e2e.sh
-	@npx ts-node verify/scripts/check-dom.ts
+	@$(DC) up -d --force-recreate static
+	@$(E2E) bash verify/scripts/run-e2e.sh
+	@$(E2E) bash verify/scripts/run-check-dom.sh
 
 # ─── Database ─────────────────────────────────────────────────────────────────
 
@@ -43,29 +80,29 @@ migrate: migrate-up
 
 ## migrate-up: Apply all pending database migrations
 migrate-up:
-	cd backend && go run ./cmd/migrate up
+	$(GO) go run ./cmd/migrate up
 
 ## migrate-down: Roll back the most recent database migration
 migrate-down:
-	cd backend && go run ./cmd/migrate down
+	$(GO) go run ./cmd/migrate down
 
 ## migrate-status: Show current migration state
 migrate-status:
-	cd backend && go run ./cmd/migrate status
+	$(GO) go run ./cmd/migrate status
 
 ## seed: Seed the database with development fixture data
 seed:
-	cd backend && go run ./cmd/seed
+	$(GO) go run ./cmd/seed
 
 ## sqlc-gen: Regenerate Go database code from SQL query files
 sqlc-gen:
-	cd backend && sqlc generate
+	$(GO) sqlc generate
 
 # ─── Code Generation ──────────────────────────────────────────────────────────
 
 ## codegen: Regenerate the frontend TypeScript API client from the OpenAPI spec
 codegen:
-	cd frontend && npx orval --config orval.config.ts
+	$(NODE) npx orval --config orval.config.ts
 
 # ─── Project Scaffolding ──────────────────────────────────────────────────────
 

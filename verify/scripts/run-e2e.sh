@@ -4,12 +4,12 @@
 # Usage: bash verify/scripts/run-e2e.sh [--headed] [--grep <pattern>]
 #
 # Environment variables:
-#   APP_URL      Dev server URL (default: http://localhost:3000)
+#   APP_URL      Dev server URL (default: http://static:3000)
 #   CI           Set to "true" in CI environments (enables retries, disables headed)
 
 set -euo pipefail
 
-APP_URL="${APP_URL:-http://localhost:3000}"
+APP_URL="${APP_URL:-http://static:3000}"
 HEADED="${HEADED:-false}"
 EXTRA_ARGS=()
 
@@ -59,10 +59,16 @@ if [[ ${#EXTRA_ARGS[@]} -gt 0 ]]; then
   PLAYWRIGHT_ARGS+=("${EXTRA_ARGS[@]}")
 fi
 
-# Run tests
-APP_URL="${APP_URL}" npx playwright "${PLAYWRIGHT_ARGS[@]}"
-
+# Run tests (inside the e2e container; deps live in /opt/tools)
+bash "$(dirname "$0")/install-e2e-deps.sh"
+if ! ls tests/e2e/*.spec.ts >/dev/null 2>&1; then
+  echo "No e2e specs yet; skipping."
+  exit 0
+fi
+set +e
+APP_URL="${APP_URL}" NODE_PATH=/opt/tools/node_modules /opt/tools/node_modules/.bin/playwright "${PLAYWRIGHT_ARGS[@]}"
 EXIT_CODE=$?
+set -e
 
 if [[ $EXIT_CODE -eq 0 ]]; then
   echo ""

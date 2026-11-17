@@ -14,7 +14,7 @@
 
 import { chromium, Browser, Page } from "playwright";
 
-const BASE_URL = process.env.APP_URL ?? "http://localhost:3000";
+const BASE_URL = process.env.APP_URL ?? "http://static:3000";
 
 interface CheckResult {
   name: string;

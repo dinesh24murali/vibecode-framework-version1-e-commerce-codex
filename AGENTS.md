@@ -74,8 +74,8 @@ These rules apply regardless of which AI tool is in use.
   ```
   or manually:
   ```
-  bash verify/scripts/run-e2e.sh
-  npx ts-node verify/scripts/check-dom.ts
+  docker compose -f docker-compose.yml -f docker-compose.tools.yml run --rm e2e bash verify/scripts/run-e2e.sh
+  docker compose -f docker-compose.yml -f docker-compose.tools.yml run --rm e2e bash verify/scripts/run-check-dom.sh
   ```
 - Consult `verify/dom-checks.md` for the DOM verification checklist
 - See `verify/mcp-playbook.md` for MCP-based verification steps
@@ -145,10 +145,20 @@ When you clone this framework, find-and-replace these tokens:
 | `shadcn/ui` | e.g. `shadcn/ui`, `Material UI`, `Tailwind`, `none` |
 | `[[CODEGEN_COMMAND]]` | Command to regenerate frontend API client from OpenAPI spec |
 | `None` | e.g. `GitHub Actions`, `GitLab CI`, `CircleCI` |
-| `go test ./..` | e.g. `npm test`, `pytest`, `go test ./...` |
-| `golangci-lint run` | e.g. `npm run lint`, `ruff check .`, `golangci-lint run` |
+| `make go-test` | e.g. `npm test`, `pytest`, `go test ./...` |
+| `make go-lint` | e.g. `npm run lint`, `ruff check .`, `golangci-lint run` |
 | `https://github.com/dinesh24murali/vibecode-framework-version1-e-commerce-codex` | Full URL of the git repository |
 | `3000` | Local dev server port, e.g. `3000`, `8080` |
 | `None` | Staging environment URL |
 | `https://cubiximprint.com/` | Production URL |
 | `16-3-2026` | Date project was started (YYYY-MM-DD) |
+
+## Docker-only toolchain (MANDATORY)
+
+Never run `go`, `node`, `npm`, `npx`, `sqlc`, `goose`, `golangci-lint`, `playwright` or `terraform` on the host. Use the Makefile targets (`make go-build|go-test|go-lint|fe-build|fe-lint|migrate-up|sqlc-gen|codegen|verify`) or, where `make` is not installed on the host, the equivalent:
+
+```
+MSYS_NO_PATHCONV=1 docker compose -f docker-compose.yml -f docker-compose.tools.yml run --rm <go|node|e2e|tf> <command>
+```
+
+Inside tool containers use service hostnames (`postgres:5432`, `redis:6379`, `mailhog:1025`, `api:8080`, `static:3000`), never `localhost`. Defined in `docker-compose.tools.yml`.

@@ -1,0 +1,82 @@
+# Tool containers: every go/node/sqlc/goose/lint/playwright/terraform command runs here.
+# Usage: docker compose -f docker-compose.yml -f docker-compose.tools.yml run --rm <service> <cmd>
+services:
+  go:
+    profiles: [tools]
+    build:
+      context: .
+      dockerfile: docker/go.Dockerfile
+    image: ecommerce-tools-go:dev
+    working_dir: /workspace/backend
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/ecommerce?sslmode=disable
+      REDIS_URL: redis://redis:6379/0
+      SMTP_HOST: mailhog
+      SMTP_PORT: "1025"
+      GOFLAGS: -buildvcs=false
+    volumes:
+      - .:/workspace
+      - go_mod_cache:/go/pkg/mod
+      - go_build_cache:/root/.cache/go-build
+      - golangci_cache:/root/.cache/golangci-lint
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+
+  node:
+    profiles: [tools]
+    image: node:22
+    working_dir: /workspace/frontend
+    environment:
+      NEXT_TELEMETRY_DISABLED: "1"
+      NEXT_PUBLIC_API_URL: http://api:8080
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/ecommerce?sslmode=disable
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - .:/workspace
+      - fe_node_modules:/workspace/frontend/node_modules
+      - npm_cache:/root/.npm
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+
+  # Serves the static export (frontend/out) on the compose network at http://static:3000
+  static:
+    profiles: [tools]
+    image: busybox:1.37
+    command: httpd -f -p 3000 -h /www
+    volumes:
+      - ./frontend/out:/www:ro
+
+  e2e:
+    profiles: [tools]
+    image: mcr.microsoft.com/playwright:v1.50.0-noble
+    working_dir: /workspace
+    environment:
+      APP_URL: http://static:3000
+      API_URL: http://api:8080
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/ecommerce?sslmode=disable
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - .:/workspace
+      - e2e_tools:/opt/tools
+      - npm_cache:/root/.npm
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+
+  tf:
+    profiles: [tools]
+    image: hashicorp/terraform:1.9
+    working_dir: /workspace/infra
+    entrypoint: ["terraform"]
+    volumes:
+      - .:/workspace
+
+volumes:
+  go_mod_cache:
+  go_build_cache:
+  golangci_cache:
+  fe_node_modules:
+  e2e_tools:
+  npm_cache:

@@ -22,8 +22,8 @@ You may skip verification for:
 ```bash
 make verify
 # Equivalent to:
-bash verify/scripts/run-e2e.sh
-npx ts-node verify/scripts/check-dom.ts
+docker compose -f docker-compose.yml -f docker-compose.tools.yml run --rm e2e bash verify/scripts/run-e2e.sh
+docker compose -f docker-compose.yml -f docker-compose.tools.yml run --rm e2e bash verify/scripts/run-check-dom.sh
 ```
 
 ### 2. DOM Checklist (for complex UI changes)
