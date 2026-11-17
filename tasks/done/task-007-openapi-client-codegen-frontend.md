@@ -1,6 +1,6 @@
 # Task: TASK-007 — OpenAPI client codegen — frontend
 
-**Status:** active
+**Status:** done
 **Created:** 2026-03-31
 **ADR refs:** none
 
@@ -18,12 +18,12 @@ See `frontend/AGENTS.md` (API Client convention), `docs/02_outputs/05_implementa
 
 ## Acceptance Criteria
 
-- [ ] `make codegen` regenerates `frontend/lib/api/` from `docs/02_outputs/04_api_spec.yaml` without errors
-- [ ] Generated types match all schemas defined in the API spec
-- [ ] Auth header (`Authorization: Bearer <token>`) is injected automatically for protected endpoints using the Zustand auth store
-- [ ] No hand-written `fetch` call exists anywhere in `frontend/` (enforced by `make verify`)
-- [ ] `frontend/AGENTS.md` `[[CODEGEN_COMMAND]]` placeholder is replaced with the actual codegen command
-- [ ] `make verify` passes
+- [x] `make codegen` regenerates `frontend/lib/api/` from `docs/02_outputs/04_api_spec.yaml` without errors
+- [x] Generated types match all schemas defined in the API spec
+- [x] Auth header (`Authorization: Bearer <token>`) is injected automatically for protected endpoints using the Zustand auth store
+- [x] No hand-written `fetch` call exists anywhere in `frontend/` (enforced by `make verify`)
+- [x] `frontend/AGENTS.md` `[[CODEGEN_COMMAND]]` placeholder is replaced with the actual codegen command
+- [x] `make verify` passes
 
 ## Dependencies
 

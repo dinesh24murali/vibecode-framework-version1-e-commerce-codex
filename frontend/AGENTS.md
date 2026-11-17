@@ -32,7 +32,7 @@
 ### API Client
 - The API client in `src/api/` (or equivalent) is **generated from** `docs/02_outputs/04_api_spec.yaml`
 - Do not manually write API fetch calls that duplicate the spec
-- To regenerate: `[[CODEGEN_COMMAND]]` (fill in your actual codegen command)
+- To regenerate: `make codegen` (orval, config in `frontend/orval.config.ts`; output committed in `frontend/lib/api/generated/`; base client `frontend/lib/api/client.ts` is hand-maintained and injects the Bearer token)
 
 ### Component Structure
 <!-- Document component conventions here. Example:

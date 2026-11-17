@@ -70,6 +70,7 @@ test: go-test
 verify: fe-build
 	@echo "Running verification..."
 	@$(DC) up -d --force-recreate static
+	@bash verify/scripts/check-no-fetch.sh
 	@$(E2E) bash verify/scripts/run-e2e.sh
 	@$(E2E) bash verify/scripts/run-check-dom.sh
 

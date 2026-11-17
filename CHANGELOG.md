@@ -9,6 +9,7 @@ Format: `- [YYYY-MM-DD] <task-name>: <one-line summary>`
 
 ## Unreleased
 
+- [2026-11-17] task-007-openapi-client-codegen-frontend: feat: orval-generated API client (lib/api/generated), base client with Bearer injection, cart slice wired to generated cart API, no-raw-fetch check in make verify
 - [2026-11-17] task-008-zustand-store-auth-cart-slices: feat: Zustand auth + cart slices, SSG-safe persist (user profile only), useHydrateStore, injectable CartApi for syncWithServer
 - [2026-11-17] task-000-docker-toolchain: chore: Docker-only toolchain (docker-compose.tools.yml, containerised Makefile targets and verify scripts), Postgres 18 volume fix, lint cleanup
 - [2026-04-03] task-006-jwt-auth-system-backend: feat: full auth pipeline — Ed25519 JWT, Argon2id passwords, OTP flows (register + password-reset), Facebook OAuth, rotating refresh tokens, AuthMiddleware, 10 endpoints wired, ADR-0005, memory/auth.md, contract tests

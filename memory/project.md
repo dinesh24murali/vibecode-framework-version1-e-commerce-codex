@@ -57,3 +57,9 @@
 ## Open Questions
 
 - *(add unresolved questions here; remove when answered)*
+
+## Frontend API client (TASK-007)
+
+- `make codegen` runs orval (`frontend/orval.config.ts`) from `docs/02_outputs/04_api_spec.yaml` into `frontend/lib/api/generated/` (committed).
+- `frontend/lib/api/client.ts` (`apiFetch`) is the only file allowed to call `fetch(`; it injects the Bearer token from the Zustand store. `make verify` runs `verify/scripts/check-no-fetch.sh`.
+- Generated functions return `{data,status,headers}`; `lib/api/cartApi.ts` adapts them to the cart slice.
