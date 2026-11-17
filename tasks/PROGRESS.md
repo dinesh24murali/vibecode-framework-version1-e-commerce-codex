@@ -17,7 +17,7 @@ Order: 000, 008, 007, 040, 009 ... 038. Status: todo/done/blocked.
 | 015 | done | Card links to product detail await TASK-016. |
 | 016 | done | Slug->id resolved via list API (spec has only GET by id); fallback slug sample-product when API down at build. |
 | 017 | done | Uses category slug + q params (matching TASK-015). Destination pages come in 018-020. |
-| 018 | todo | |
+| 018 | done | Social URLs env-configured (NEXT_PUBLIC_*_URL); links to terms/about 404 until 019. |
 | 019 | todo | |
 | 020 | todo | |
 | 021 | todo | |

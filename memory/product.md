@@ -74,3 +74,7 @@
 ## Navbar (TASK-017)
 
 - `components/layout/Navbar` is mounted in `app/(shop)/layout.tsx`. Menu content is static in `lib/constants/navigation.ts` (12 categories, 11 printing products, 13 inhouse services). Category links use `/products/?category=<kebab-case name>`, so seeded category slugs must be kebab-case of the names. Search goes to `/products/?q=`.
+
+## Footer (TASK-018)
+
+- `components/layout/Footer` is mounted in the (shop) layout. Social URLs come from `NEXT_PUBLIC_FACEBOOK_URL`, `NEXT_PUBLIC_INSTAGRAM_URL`, `NEXT_PUBLIC_WHATSAPP_URL` via `lib/constants/social.ts` (reuse on the contact page).
