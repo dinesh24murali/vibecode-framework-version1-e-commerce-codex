@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 
 export function AddToCartButton({ productId, name }: { productId: string; name: string }) {
   const addItem = useStore((s) => s.addItem)
+  const accessToken = useStore((s) => s.accessToken)
   const [toast, setToast] = useState<string | null>(null)
 
   useEffect(() => {
@@ -16,7 +17,18 @@ export function AddToCartButton({ productId, name }: { productId: string; name: 
   return (
     <>
       <Button
-        onClick={() => {
+        onClick={async () => {
+          const { cartApi } = useStore.getState()
+          if (accessToken && cartApi) {
+            // Signed in: the server cart is authoritative, so add there and mirror the result.
+            try {
+              useStore.setState({ items: await cartApi.addItem(productId, 1) })
+              setToast(`${name} added to cart`)
+            } catch {
+              setToast(`Could not add ${name} to cart`)
+            }
+            return
+          }
           addItem(productId, 1)
           setToast(`${name} added to cart`)
         }}

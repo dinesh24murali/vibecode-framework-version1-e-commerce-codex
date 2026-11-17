@@ -21,7 +21,7 @@ Order: 000, 008, 007, 040, 009 ... 038. Status: todo/done/blocked.
 | 019 | done | Placeholder content; legal copy is boilerplate needing counsel review. |
 | 020 | done | Spec wins: 200 + subject field. Address and notify email env-configured; no rate limiting yet. |
 | 021 | done | Cart total = discounted prices (no tax); line price is current, not price-at-add. |
-| 022 | todo | |
+| 022 | done | Tokens are memory-only so a reload shows the login prompt; server cart persists. Checkout link targets /checkout/ (TASK-024+). |
 | 023 | todo | |
 | 039 | todo | |
 | 024 | todo | |

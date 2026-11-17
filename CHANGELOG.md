@@ -9,6 +9,8 @@ Format: `- [YYYY-MM-DD] <task-name>: <one-line summary>`
 
 ## Unreleased
 
+- [2026-11-17] task-022-cart-page: feat: /cart page (server-synced lines, optimistic quantity stepper with rollback, summary, empty state, login prompt) and Add to Cart now writes to the server cart when signed in
+
 - [2026-11-17] task-021-cart-api: feat: authenticated cart endpoints (GET, DELETE, POST items, PUT/DELETE items/{id}) with server-side discounted totals, increment-on-duplicate and contract tests
 
 - [2026-11-17] task-020-contact-us: feat: POST /contact (stores enquiry, SMTP notification) and Contact Us page with map, social links and validated form

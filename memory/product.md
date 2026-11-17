@@ -85,3 +85,6 @@
 
 ## Cart API (TASK-021)
 Cart rows are per (user, product). Cart.id is the user id. Totals use the current discounted price (no price snapshot column). Adding an existing product sums quantities; quantity < 1 is a 400. Tax and coupons belong to checkout (TASK-023).
+
+## Cart page (TASK-022)
+`/cart/` loads the server cart with the generated client (needs product details) and mirrors it into cartSlice. Quantity edits are optimistic and roll back on API error. Add to Cart calls the server when signed in, otherwise only the local slice. Tokens are memory-only, so tests must reach /cart/ by client-side navigation after login.
