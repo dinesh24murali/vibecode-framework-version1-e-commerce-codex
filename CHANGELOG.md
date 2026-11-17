@@ -9,6 +9,8 @@ Format: `- [YYYY-MM-DD] <task-name>: <one-line summary>`
 
 ## Unreleased
 
+- [2026-11-17] task-023-checkout-api: feat: POST /checkout/calculate, /checkout/coupons/validate, /checkout/orders (OrderBuilder, 18% GST after coupon, flat+percentage coupons once per user, atomic stock reservation in one transaction); migration adds orders.coupon_code and coupon_discount_inr
+
 - [2026-11-17] task-022-cart-page: feat: /cart page (server-synced lines, optimistic quantity stepper with rollback, summary, empty state, login prompt) and Add to Cart now writes to the server cart when signed in
 
 - [2026-11-17] task-021-cart-api: feat: authenticated cart endpoints (GET, DELETE, POST items, PUT/DELETE items/{id}) with server-side discounted totals, increment-on-duplicate and contract tests

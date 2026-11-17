@@ -160,8 +160,8 @@ func orderJSON(v *services.OrderView) gin.H {
 	o := *v.Order
 	return gin.H{
 		"id": o.ID, "order_number": o.OrderNumber, "status": v.Status, "items": items,
-		"shipping_address": addr, "subtotal": money(o.SubtotalInr), "coupon_code": nil,
-		"coupon_discount": 0, "taxable_amount": money(o.SubtotalInr), "gst_amount": money(o.TaxInr),
+		"shipping_address": addr, "subtotal": money(o.SubtotalInr), "coupon_code": nullable(o.CouponCode),
+		"coupon_discount": money(o.CouponDiscountInr), "taxable_amount": money(o.SubtotalInr) - money(o.CouponDiscountInr), "gst_amount": money(o.TaxInr),
 		"total": money(o.TotalInr), "created_at": o.CreatedAt, "updated_at": o.UpdatedAt,
 	}
 }

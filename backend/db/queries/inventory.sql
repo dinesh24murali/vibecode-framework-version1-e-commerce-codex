@@ -41,3 +41,10 @@ SET on_hand    = on_hand - $2,
     updated_at = now()
 WHERE product_id = $1
 RETURNING *;
+
+-- name: ReserveStockIfAvailable :execrows
+UPDATE inventory_items
+SET reserved   = reserved + $2,
+    updated_at = now()
+WHERE product_id = $1
+  AND on_hand - reserved >= $2;

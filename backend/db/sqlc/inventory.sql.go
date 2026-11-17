@@ -158,6 +158,27 @@ func (q *Queries) ReserveStock(ctx context.Context, arg ReserveStockParams) (Inv
 	return i, err
 }
 
+const reserveStockIfAvailable = `-- name: ReserveStockIfAvailable :execrows
+UPDATE inventory_items
+SET reserved   = reserved + $2,
+    updated_at = now()
+WHERE product_id = $1
+  AND on_hand - reserved >= $2
+`
+
+type ReserveStockIfAvailableParams struct {
+	ProductID uuid.UUID `json:"product_id"`
+	Reserved  int32     `json:"reserved"`
+}
+
+func (q *Queries) ReserveStockIfAvailable(ctx context.Context, arg ReserveStockIfAvailableParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, reserveStockIfAvailable, arg.ProductID, arg.Reserved)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
 const updateInventory = `-- name: UpdateInventory :one
 UPDATE inventory_items
 SET on_hand           = $2,

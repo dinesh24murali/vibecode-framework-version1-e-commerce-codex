@@ -1,6 +1,6 @@
 -- name: CreateOrder :one
-INSERT INTO orders (user_id, order_number, status, subtotal_inr, shipping_inr, tax_inr, total_inr, currency_code, placed_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, now())
+INSERT INTO orders (user_id, order_number, status, subtotal_inr, shipping_inr, tax_inr, total_inr, currency_code, coupon_code, coupon_discount_inr, placed_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, now())
 RETURNING *;
 
 -- name: GetOrderByID :one

@@ -64,6 +64,9 @@ func newRouter(deps RouterDeps) *gin.Engine {
 	productHandler := handlers.NewProductHandler(productSvc)
 	categoryHandler := handlers.NewCategoryHandler(productSvc)
 	cartHandler := handlers.NewCartHandler(services.NewCartService(repositories.NewCartRepository(deps.Pool), productSvc))
+	checkoutHandler := handlers.NewCheckoutHandler(services.NewCheckoutService(
+		services.NewCartService(repositories.NewCartRepository(deps.Pool), productSvc),
+		services.NewCouponService(repositories.NewCouponRepository(deps.Pool)), addrRepo, repositories.NewCheckoutRepository(deps.Pool)))
 	landingHandler := handlers.NewLandingHandler(services.NewLandingService(repositories.NewCarouselRepository(deps.Pool), productSvc))
 
 	var storage services.StorageService = services.DisabledStorage{}
@@ -146,6 +149,10 @@ func newRouter(deps RouterDeps) *gin.Engine {
 		protected.POST("/cart/items", cartHandler.AddItem)
 		protected.PUT("/cart/items/:id", cartHandler.UpdateItem)
 		protected.DELETE("/cart/items/:id", cartHandler.RemoveItem)
+
+		protected.POST("/checkout/calculate", checkoutHandler.Calculate)
+		protected.POST("/checkout/coupons/validate", checkoutHandler.ValidateCoupon)
+		protected.POST("/checkout/orders", checkoutHandler.PlaceOrder)
 
 		protected.GET("/orders", accountHandler.ListOrders)
 		protected.GET("/orders/:id", accountHandler.GetOrder)

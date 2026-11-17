@@ -7,6 +7,7 @@ package sqlc
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/google/uuid"
 	"github.com/lib/pq"
@@ -31,20 +32,22 @@ func (q *Queries) CountOrdersByUserFiltered(ctx context.Context, arg CountOrders
 }
 
 const createOrder = `-- name: CreateOrder :one
-INSERT INTO orders (user_id, order_number, status, subtotal_inr, shipping_inr, tax_inr, total_inr, currency_code, placed_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, now())
-RETURNING id, user_id, order_number, status, subtotal_inr, shipping_inr, tax_inr, total_inr, currency_code, placed_at, created_at, updated_at
+INSERT INTO orders (user_id, order_number, status, subtotal_inr, shipping_inr, tax_inr, total_inr, currency_code, coupon_code, coupon_discount_inr, placed_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, now())
+RETURNING id, user_id, order_number, status, subtotal_inr, shipping_inr, tax_inr, total_inr, currency_code, placed_at, created_at, updated_at, coupon_code, coupon_discount_inr
 `
 
 type CreateOrderParams struct {
-	UserID       uuid.UUID   `json:"user_id"`
-	OrderNumber  string      `json:"order_number"`
-	Status       OrderStatus `json:"status"`
-	SubtotalInr  string      `json:"subtotal_inr"`
-	ShippingInr  string      `json:"shipping_inr"`
-	TaxInr       string      `json:"tax_inr"`
-	TotalInr     string      `json:"total_inr"`
-	CurrencyCode string      `json:"currency_code"`
+	UserID            uuid.UUID      `json:"user_id"`
+	OrderNumber       string         `json:"order_number"`
+	Status            OrderStatus    `json:"status"`
+	SubtotalInr       string         `json:"subtotal_inr"`
+	ShippingInr       string         `json:"shipping_inr"`
+	TaxInr            string         `json:"tax_inr"`
+	TotalInr          string         `json:"total_inr"`
+	CurrencyCode      string         `json:"currency_code"`
+	CouponCode        sql.NullString `json:"coupon_code"`
+	CouponDiscountInr string         `json:"coupon_discount_inr"`
 }
 
 func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (Order, error) {
@@ -57,6 +60,8 @@ func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (Order
 		arg.TaxInr,
 		arg.TotalInr,
 		arg.CurrencyCode,
+		arg.CouponCode,
+		arg.CouponDiscountInr,
 	)
 	var i Order
 	err := row.Scan(
@@ -72,12 +77,14 @@ func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (Order
 		&i.PlacedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.CouponCode,
+		&i.CouponDiscountInr,
 	)
 	return i, err
 }
 
 const getOrderByID = `-- name: GetOrderByID :one
-SELECT id, user_id, order_number, status, subtotal_inr, shipping_inr, tax_inr, total_inr, currency_code, placed_at, created_at, updated_at FROM orders
+SELECT id, user_id, order_number, status, subtotal_inr, shipping_inr, tax_inr, total_inr, currency_code, placed_at, created_at, updated_at, coupon_code, coupon_discount_inr FROM orders
 WHERE id = $1
 `
 
@@ -97,12 +104,14 @@ func (q *Queries) GetOrderByID(ctx context.Context, id uuid.UUID) (Order, error)
 		&i.PlacedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.CouponCode,
+		&i.CouponDiscountInr,
 	)
 	return i, err
 }
 
 const getOrderByNumber = `-- name: GetOrderByNumber :one
-SELECT id, user_id, order_number, status, subtotal_inr, shipping_inr, tax_inr, total_inr, currency_code, placed_at, created_at, updated_at FROM orders
+SELECT id, user_id, order_number, status, subtotal_inr, shipping_inr, tax_inr, total_inr, currency_code, placed_at, created_at, updated_at, coupon_code, coupon_discount_inr FROM orders
 WHERE order_number = $1
 `
 
@@ -122,12 +131,14 @@ func (q *Queries) GetOrderByNumber(ctx context.Context, orderNumber string) (Ord
 		&i.PlacedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.CouponCode,
+		&i.CouponDiscountInr,
 	)
 	return i, err
 }
 
 const listOrdersByUser = `-- name: ListOrdersByUser :many
-SELECT id, user_id, order_number, status, subtotal_inr, shipping_inr, tax_inr, total_inr, currency_code, placed_at, created_at, updated_at FROM orders
+SELECT id, user_id, order_number, status, subtotal_inr, shipping_inr, tax_inr, total_inr, currency_code, placed_at, created_at, updated_at, coupon_code, coupon_discount_inr FROM orders
 WHERE user_id = $1
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3
@@ -161,6 +172,8 @@ func (q *Queries) ListOrdersByUser(ctx context.Context, arg ListOrdersByUserPara
 			&i.PlacedAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.CouponCode,
+			&i.CouponDiscountInr,
 		); err != nil {
 			return nil, err
 		}
@@ -176,7 +189,7 @@ func (q *Queries) ListOrdersByUser(ctx context.Context, arg ListOrdersByUserPara
 }
 
 const listOrdersByUserFiltered = `-- name: ListOrdersByUserFiltered :many
-SELECT id, user_id, order_number, status, subtotal_inr, shipping_inr, tax_inr, total_inr, currency_code, placed_at, created_at, updated_at FROM orders
+SELECT id, user_id, order_number, status, subtotal_inr, shipping_inr, tax_inr, total_inr, currency_code, placed_at, created_at, updated_at, coupon_code, coupon_discount_inr FROM orders
 WHERE user_id = $1
   AND (cardinality($2::order_status[]) = 0 OR status = ANY($2::order_status[]))
 ORDER BY created_at DESC
@@ -217,6 +230,8 @@ func (q *Queries) ListOrdersByUserFiltered(ctx context.Context, arg ListOrdersBy
 			&i.PlacedAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.CouponCode,
+			&i.CouponDiscountInr,
 		); err != nil {
 			return nil, err
 		}
@@ -236,7 +251,7 @@ UPDATE orders
 SET status     = $2,
     updated_at = now()
 WHERE id = $1
-RETURNING id, user_id, order_number, status, subtotal_inr, shipping_inr, tax_inr, total_inr, currency_code, placed_at, created_at, updated_at
+RETURNING id, user_id, order_number, status, subtotal_inr, shipping_inr, tax_inr, total_inr, currency_code, placed_at, created_at, updated_at, coupon_code, coupon_discount_inr
 `
 
 type UpdateOrderStatusParams struct {
@@ -260,6 +275,8 @@ func (q *Queries) UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusPa
 		&i.PlacedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.CouponCode,
+		&i.CouponDiscountInr,
 	)
 	return i, err
 }

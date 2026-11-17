@@ -88,3 +88,6 @@ Cart rows are per (user, product). Cart.id is the user id. Totals use the curren
 
 ## Cart page (TASK-022)
 `/cart/` loads the server cart with the generated client (needs product details) and mirrors it into cartSlice. Quantity edits are optimistic and roll back on API error. Add to Cart calls the server when signed in, otherwise only the local slice. Tokens are memory-only, so tests must reach /cart/ by client-side navigation after login.
+
+## Checkout API (TASK-023)
+Pricing: subtotal (server-discounted cart) minus coupon = taxable; GST 18% on taxable; total = taxable + GST. Orders persist coupon_code/coupon_discount_inr; tax_inr holds GST. Coupons: flat (INR off) or percentage, capped at subtotal, one redemption per user (coupon_users). Order placement runs in one transaction and reserves stock with a conditional UPDATE (no oversell); status starts pending_payment. validate returns 200 with is_valid=false for unusable codes.

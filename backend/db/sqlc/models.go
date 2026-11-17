@@ -214,18 +214,20 @@ type InventoryItem struct {
 }
 
 type Order struct {
-	ID           uuid.UUID    `json:"id"`
-	UserID       uuid.UUID    `json:"user_id"`
-	OrderNumber  string       `json:"order_number"`
-	Status       OrderStatus  `json:"status"`
-	SubtotalInr  string       `json:"subtotal_inr"`
-	ShippingInr  string       `json:"shipping_inr"`
-	TaxInr       string       `json:"tax_inr"`
-	TotalInr     string       `json:"total_inr"`
-	CurrencyCode string       `json:"currency_code"`
-	PlacedAt     sql.NullTime `json:"placed_at"`
-	CreatedAt    time.Time    `json:"created_at"`
-	UpdatedAt    time.Time    `json:"updated_at"`
+	ID                uuid.UUID      `json:"id"`
+	UserID            uuid.UUID      `json:"user_id"`
+	OrderNumber       string         `json:"order_number"`
+	Status            OrderStatus    `json:"status"`
+	SubtotalInr       string         `json:"subtotal_inr"`
+	ShippingInr       string         `json:"shipping_inr"`
+	TaxInr            string         `json:"tax_inr"`
+	TotalInr          string         `json:"total_inr"`
+	CurrencyCode      string         `json:"currency_code"`
+	PlacedAt          sql.NullTime   `json:"placed_at"`
+	CreatedAt         time.Time      `json:"created_at"`
+	UpdatedAt         time.Time      `json:"updated_at"`
+	CouponCode        sql.NullString `json:"coupon_code"`
+	CouponDiscountInr string         `json:"coupon_discount_inr"`
 }
 
 type OrderAddress struct {

@@ -98,6 +98,7 @@ type Querier interface {
 	ReleaseStock(ctx context.Context, arg ReleaseStockParams) (InventoryItem, error)
 	RemoveAttributeFromProduct(ctx context.Context, arg RemoveAttributeFromProductParams) error
 	ReserveStock(ctx context.Context, arg ReserveStockParams) (InventoryItem, error)
+	ReserveStockIfAvailable(ctx context.Context, arg ReserveStockIfAvailableParams) (int64, error)
 	RevokeRefreshToken(ctx context.Context, id uuid.UUID) error
 	RevokeTokenFamily(ctx context.Context, tokenFamilyID string) error
 	SearchProducts(ctx context.Context, arg SearchProductsParams) ([]SearchProductsRow, error)
