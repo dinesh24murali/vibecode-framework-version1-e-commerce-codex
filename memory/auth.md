@@ -70,3 +70,9 @@
 - `?redirect=` is sanitised by `lib/auth/helpers.ts#safeRedirect` (same-origin relative paths only).
 - Facebook: loads the FB SDK script on click; needs `NEXT_PUBLIC_FACEBOOK_APP_ID`. Not covered by e2e (popup).
 - e2e (`tests/e2e/auth.spec.ts`, config `tests/e2e/playwright.config.ts`) mocks `/api/v1/auth/*` with `page.route`; the static verify stack has no API.
+
+## Admin Auth (TASK-025)
+
+- `POST /api/v1/admin/auth/login` is public; it issues normal tokens but only for `role=admin` users (others get 401, same as a bad password).
+- All other `/api/v1/admin/*` routes use `auth.AdminMiddleware` (401 no/invalid token, 403 non-admin). `auth.RequireRole` is still available.
+- Frontend: `adminAuthSlice` (`adminAccessToken`, memory only) is separate from the customer session; `apiFetch` sends the admin token for `/api/v1/admin/*` (not `/admin/auth/*`). `(admin)/layout.tsx` wraps pages in `AdminGuard` (redirects to `/admin/login/`).

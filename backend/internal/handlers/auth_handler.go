@@ -308,3 +308,23 @@ func splitFullName(fullName string) (string, string) {
 	}
 	return fullName, ""
 }
+
+// AdminLogin godoc POST /api/v1/admin/auth/login (email + password, admin role only)
+func (h *AuthHandler) AdminLogin(c *gin.Context) {
+	var req loginRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	tokens, err := h.svc.AdminLogin(c.Request.Context(), req.Email, req.Password, c.ClientIP(), c.GetHeader("User-Agent"))
+	if err != nil {
+		if errors.Is(err, services.ErrInvalidCredentials) {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid email or password"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+	h.setRefreshCookie(c, tokens.RefreshToken)
+	c.JSON(http.StatusOK, buildAuthResponse(tokens))
+}

@@ -20,34 +20,37 @@ const (
 // On failure it aborts with 401 Unauthorized.
 func Middleware(jwtSvc *JWTService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing Authorization header"})
-			return
+		if authenticate(c, jwtSvc) {
+			c.Next()
 		}
-
-		parts := strings.SplitN(authHeader, " ", 2)
-		if len(parts) != 2 || !strings.EqualFold(parts[0], "bearer") {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid Authorization header format"})
-			return
-		}
-
-		claims, err := jwtSvc.VerifyAccessToken(parts[1])
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid or expired token"})
-			return
-		}
-
-		userID, err := uuid.Parse(claims.Subject)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid token subject"})
-			return
-		}
-
-		c.Set(ContextUserID, userID)
-		c.Set(ContextUserRole, claims.Role)
-		c.Next()
 	}
+}
+
+// authenticate validates the Bearer token and sets the context keys. It aborts and returns false on failure.
+func authenticate(c *gin.Context, jwtSvc *JWTService) bool {
+	fail := func(msg string) bool {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": msg})
+		return false
+	}
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" {
+		return fail("missing Authorization header")
+	}
+	parts := strings.SplitN(authHeader, " ", 2)
+	if len(parts) != 2 || !strings.EqualFold(parts[0], "bearer") {
+		return fail("invalid Authorization header format")
+	}
+	claims, err := jwtSvc.VerifyAccessToken(parts[1])
+	if err != nil {
+		return fail("invalid or expired token")
+	}
+	userID, err := uuid.Parse(claims.Subject)
+	if err != nil {
+		return fail("invalid token subject")
+	}
+	c.Set(ContextUserID, userID)
+	c.Set(ContextUserRole, claims.Role)
+	return true
 }
 
 // RequireRole aborts with 403 Forbidden unless the authenticated user has the given role.

@@ -366,3 +366,17 @@ func hashToken(raw string) string {
 	h := sha256.Sum256([]byte(raw))
 	return hex.EncodeToString(h[:])
 }
+
+// AdminLogin verifies email/password for an administrator account. Non-admin
+// users get the same ErrInvalidCredentials as a wrong password so the endpoint
+// does not reveal which emails belong to customers.
+func (s *AuthService) AdminLogin(ctx context.Context, email, password, clientIP, userAgent string) (*AuthTokens, error) {
+	user, err := s.users.GetByEmail(ctx, email)
+	if err != nil || !user.PasswordHash.Valid || !verifyPassword(password, user.PasswordHash.String) {
+		return nil, ErrInvalidCredentials
+	}
+	if user.Role != dbsqlc.UserRoleAdmin {
+		return nil, ErrInvalidCredentials
+	}
+	return s.issueTokens(ctx, user, clientIP, userAgent)
+}

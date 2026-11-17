@@ -133,6 +133,12 @@ func newRouter(deps RouterDeps) *gin.Engine {
 		pwReset.POST("/complete", authHandler.PasswordResetComplete)
 	}
 
+	// Admin routes: login is public; everything else needs an admin-role JWT (403 otherwise).
+	adminPublic := v1.Group("/admin")
+	adminPublic.POST("/auth/login", authHandler.AdminLogin)
+	admin := v1.Group("/admin", auth.AdminMiddleware(jwtSvc))
+	admin.POST("/upload/image/presign", uploadHandler.Presign)
+
 	// Protected auth route — requires valid access token.
 	// Razorpay calls this without a JWT; the HMAC signature is the authentication.
 	v1.POST("/payments/webhooks/razorpay", paymentHandler.Webhook)
@@ -140,9 +146,6 @@ func newRouter(deps RouterDeps) *gin.Engine {
 	protected := v1.Group("", auth.Middleware(jwtSvc))
 	{
 		protected.POST("/auth/logout", authHandler.Logout)
-
-		admin := protected.Group("/admin", auth.RequireRole("admin"))
-		admin.POST("/upload/image/presign", uploadHandler.Presign)
 
 		acct := protected.Group("/account")
 		acct.GET("/profile", accountHandler.GetProfile)

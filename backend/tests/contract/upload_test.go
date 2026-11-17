@@ -46,7 +46,7 @@ func uploadServer(t *testing.T, storage services.StorageService) (*gin.Engine, *
 	gin.SetMode(gin.TestMode)
 	jwtSvc := testJWT(t)
 	r := gin.New()
-	admin := r.Group("/api/v1/admin", auth.Middleware(jwtSvc), auth.RequireRole("admin"))
+	admin := r.Group("/api/v1/admin", auth.AdminMiddleware(jwtSvc))
 	admin.POST("/upload/image/presign", handlers.NewUploadHandler(storage).Presign)
 	return r, jwtSvc
 }
