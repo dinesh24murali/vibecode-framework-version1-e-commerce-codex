@@ -6,12 +6,18 @@ package sqlc
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/google/uuid"
 )
 
 type Querier interface {
+	// Admin product management (includes inactive products).
+	AdminCountProducts(ctx context.Context, query sql.NullString) (int64, error)
+	AdminListProducts(ctx context.Context, arg AdminListProductsParams) ([]AdminListProductsRow, error)
+	AdminUpdateProduct(ctx context.Context, arg AdminUpdateProductParams) (AdminUpdateProductRow, error)
 	AssignAttributeToProduct(ctx context.Context, arg AssignAttributeToProductParams) (ProductAttributeAssignment, error)
+	AssignProductAttributeValue(ctx context.Context, arg AssignProductAttributeValueParams) error
 	ClearCart(ctx context.Context, userID uuid.UUID) error
 	ClearDefaultAddresses(ctx context.Context, userID uuid.UUID) error
 	CountAssignmentsForValue(ctx context.Context, attributeValueID uuid.UUID) (int64, error)
@@ -48,6 +54,7 @@ type Querier interface {
 	DeleteCartItem(ctx context.Context, arg DeleteCartItemParams) error
 	DeleteCartItemByID(ctx context.Context, arg DeleteCartItemByIDParams) (int64, error)
 	DeleteExpiredTokens(ctx context.Context) error
+	DeleteImagesByProductID(ctx context.Context, productID uuid.UUID) error
 	DeleteProductImage(ctx context.Context, id uuid.UUID) error
 	GetActiveProductByID(ctx context.Context, id uuid.UUID) (GetActiveProductByIDRow, error)
 	GetAddressByID(ctx context.Context, id uuid.UUID) (Address, error)
@@ -78,6 +85,7 @@ type Querier interface {
 	GetRefreshTokenByHash(ctx context.Context, tokenHash string) (RefreshToken, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
+	InsertProductImage(ctx context.Context, arg InsertProductImageParams) error
 	ListActiveCarouselSlides(ctx context.Context) ([]CarouselSlide, error)
 	ListActiveCategorySlugs(ctx context.Context) ([]string, error)
 	ListAddressesByUser(ctx context.Context, userID uuid.UUID) ([]Address, error)
@@ -103,12 +111,14 @@ type Querier interface {
 	ListValuesByAttribute(ctx context.Context, attributeID uuid.UUID) ([]ProductAttributeValue, error)
 	ReleaseStock(ctx context.Context, arg ReleaseStockParams) (InventoryItem, error)
 	RemoveAttributeFromProduct(ctx context.Context, arg RemoveAttributeFromProductParams) error
+	RemoveProductAttributeValue(ctx context.Context, arg RemoveProductAttributeValueParams) (int64, error)
 	ReserveStock(ctx context.Context, arg ReserveStockParams) (InventoryItem, error)
 	ReserveStockIfAvailable(ctx context.Context, arg ReserveStockIfAvailableParams) (int64, error)
 	RevokeRefreshToken(ctx context.Context, id uuid.UUID) error
 	RevokeTokenFamily(ctx context.Context, tokenFamilyID string) error
 	SearchProducts(ctx context.Context, arg SearchProductsParams) ([]SearchProductsRow, error)
 	SetDefaultAddress(ctx context.Context, arg SetDefaultAddressParams) (Address, error)
+	SetProductActive(ctx context.Context, arg SetProductActiveParams) (int64, error)
 	SoftDeleteUser(ctx context.Context, id uuid.UUID) error
 	UpdateAddress(ctx context.Context, arg UpdateAddressParams) (Address, error)
 	UpdateAttribute(ctx context.Context, arg UpdateAttributeParams) (ProductAttribute, error)
@@ -125,6 +135,7 @@ type Querier interface {
 	UpdateUserEmail(ctx context.Context, arg UpdateUserEmailParams) (User, error)
 	UpdateUserName(ctx context.Context, arg UpdateUserNameParams) (User, error)
 	UpsertCartItem(ctx context.Context, arg UpsertCartItemParams) (Cart, error)
+	UpsertInventoryOnHand(ctx context.Context, arg UpsertInventoryOnHandParams) error
 	WithdrawConsent(ctx context.Context, arg WithdrawConsentParams) error
 }
 

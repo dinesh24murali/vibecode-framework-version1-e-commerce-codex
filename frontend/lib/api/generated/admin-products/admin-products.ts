@@ -11,6 +11,7 @@ import type {
   AdminListProductsParams,
   AssignProductAttributeRequest,
   BadRequestResponse,
+  ConflictResponse,
   CreateProductRequest,
   ForbiddenResponse,
   InternalServerErrorResponse,
@@ -129,6 +130,11 @@ export type adminCreateProductResponse403 = {
   status: 403
 }
 
+export type adminCreateProductResponse409 = {
+  data: ConflictResponse
+  status: 409
+}
+
 export type adminCreateProductResponse422 = {
   data: UnprocessableEntityResponse
   status: 422
@@ -142,7 +148,7 @@ export type adminCreateProductResponse500 = {
 export type adminCreateProductResponseSuccess = (adminCreateProductResponse201) & {
   headers: Headers;
 };
-export type adminCreateProductResponseError = (adminCreateProductResponse400 | adminCreateProductResponse401 | adminCreateProductResponse403 | adminCreateProductResponse422 | adminCreateProductResponse500) & {
+export type adminCreateProductResponseError = (adminCreateProductResponse400 | adminCreateProductResponse401 | adminCreateProductResponse403 | adminCreateProductResponse409 | adminCreateProductResponse422 | adminCreateProductResponse500) & {
   headers: Headers;
 };
 
@@ -253,6 +259,11 @@ export type adminUpdateProductResponse404 = {
   status: 404
 }
 
+export type adminUpdateProductResponse409 = {
+  data: ConflictResponse
+  status: 409
+}
+
 export type adminUpdateProductResponse422 = {
   data: UnprocessableEntityResponse
   status: 422
@@ -266,7 +277,7 @@ export type adminUpdateProductResponse500 = {
 export type adminUpdateProductResponseSuccess = (adminUpdateProductResponse200) & {
   headers: Headers;
 };
-export type adminUpdateProductResponseError = (adminUpdateProductResponse400 | adminUpdateProductResponse401 | adminUpdateProductResponse403 | adminUpdateProductResponse404 | adminUpdateProductResponse422 | adminUpdateProductResponse500) & {
+export type adminUpdateProductResponseError = (adminUpdateProductResponse400 | adminUpdateProductResponse401 | adminUpdateProductResponse403 | adminUpdateProductResponse404 | adminUpdateProductResponse409 | adminUpdateProductResponse422 | adminUpdateProductResponse500) & {
   headers: Headers;
 };
 

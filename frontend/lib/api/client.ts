@@ -18,3 +18,12 @@ export const apiFetch = async <T>(url: string, options: RequestInit = {}): Promi
   const data = text ? JSON.parse(text) : {}
   return { data, status: res.status, headers: res.headers } as T
 }
+
+/**
+ * Uploads a file straight to S3 with a presigned PUT URL (admin image uploader).
+ * Lives here because this file is the only place allowed to call fetch().
+ */
+export const putToPresignedUrl = async (presignedUrl: string, file: File): Promise<boolean> => {
+  const res = await fetch(presignedUrl, { method: 'PUT', headers: { 'Content-Type': file.type }, body: file })
+  return res.ok
+}

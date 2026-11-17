@@ -103,3 +103,11 @@ Order lifecycle: pending_payment -> (webhook payment.captured) paid, or payment_
 - `/api/v1/admin/attributes[...]` CRUD (9 endpoints) via `AttributeAdminService`. Codes must match `^[a-z0-9]+(_[a-z0-9]+)*$` and are immutable; value slugs are auto-generated from the label.
 - Deleting a value assigned to any product returns 409; deleting a definition cascades to its values and assignments. Duplicate code/slug returns 409; invalid input 422.
 - Admin UI: `/admin/attributes/` (modals, no `[id]` route), reached via the dashboard link (admin session is memory-only, so use client-side navigation).
+
+## Admin products (TASK-027)
+
+- `/api/v1/admin/products[...]` (8 endpoints) via `AdminProductService`; list includes inactive products and searches title/slug/sku.
+- Delete is soft (`is_active=false`, 200 `{message}`); public reads already filter on `is_active`.
+- Storage quirks: one `category_id` per product (first of `category_ids`), `sku` mirrors `slug`, `stock` = inventory `on_hand`, discount stored as INT (0 = NULL). Updating `image_urls` replaces all images; omitting it leaves them untouched.
+- Attribute assignment is idempotent (`ON CONFLICT DO NOTHING`); remove returns 404 if not assigned.
+- UI: `/admin/products/` table + `ProductFormModal` drawer (fetches by id on open, uploads images via `putToPresignedUrl` in `lib/api/client.ts`).

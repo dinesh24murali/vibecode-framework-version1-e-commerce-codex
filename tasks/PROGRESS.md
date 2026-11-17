@@ -27,7 +27,7 @@ Order: 000, 008, 007, 040, 009 ... 038. Status: todo/done/blocked.
 | 024 | done | Razorpay Checkout JS is not wired: Place Order creates the pending order and goes to /account/?tab=orders; paying needs a later task using POST /payments/initiate. |
 | 025 | done | Admin login returns 401 for non-admin accounts. No admin seed until TASK-030; admin session in memory (reload = re-login). |
 | 026 | done | Spec amended: value delete returns 409 if assigned (was cascade). Definition delete still cascades. sqlc regenerated with v1.31.1 (header churn). |
-| 027 | todo | |
+| 027 | done | One category stored per product (first of category_ids); sku = slug; no attribute-assignment UI yet (API tested). Spec: 409 added to create/update. |
 | 028 | todo | |
 | 029 | todo | |
 | 041 | todo | |

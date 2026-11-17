@@ -150,6 +150,17 @@ func newRouter(deps RouterDeps) *gin.Engine {
 	admin.PUT("/attributes/:attrDefId/values/:valueId", adminAttr.UpdateValue)
 	admin.DELETE("/attributes/:attrDefId/values/:valueId", adminAttr.DeleteValue)
 
+	productSvcAdmin := services.NewAdminProductService(repositories.NewAdminProductRepository(deps.Pool), productSvc)
+	adminProd := handlers.NewAdminProductHandler(productSvcAdmin)
+	admin.GET("/products", adminProd.List)
+	admin.POST("/products", adminProd.Create)
+	admin.GET("/products/:id", adminProd.Get)
+	admin.PUT("/products/:id", adminProd.Update)
+	admin.DELETE("/products/:id", adminProd.Delete)
+	admin.GET("/products/:id/attributes", adminProd.ListAttributes)
+	admin.POST("/products/:id/attributes", adminProd.AssignAttribute)
+	admin.DELETE("/products/:id/attributes/:attrId", adminProd.RemoveAttribute)
+
 	// Protected auth route — requires valid access token.
 	// Razorpay calls this without a JWT; the HMAC signature is the authentication.
 	v1.POST("/payments/webhooks/razorpay", paymentHandler.Webhook)
