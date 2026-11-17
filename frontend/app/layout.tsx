@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { StoreHydrator } from '@/components/StoreHydrator'
 
 export const metadata: Metadata = {
   title: 'e-commerce-site',
@@ -13,7 +14,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <StoreHydrator />
+        {children}
+      </body>
     </html>
   )
 }

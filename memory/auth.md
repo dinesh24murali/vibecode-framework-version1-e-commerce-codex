@@ -56,3 +56,10 @@
 - Verifies Ed25519 signature and expiry
 - Sets `userID` (uuid.UUID) and `userRole` (string) in Gin context
 - Returns `401 Unauthorized` on any failure
+
+## Frontend Store (TASK-008)
+
+- `frontend/lib/store/` holds `authSlice` + `cartSlice` in one persisted store (`useStore`, `StoreState`).
+- Access/refresh tokens are in-memory only; `partialize` persists only `user`. Cart is never persisted.
+- `skipHydration: true` + `useHydrateStore` (mounted via `StoreHydrator` in root layout) rehydrates after mount (ADR-0003).
+- `cartSlice.syncWithServer()` uses an injectable `CartApi` (`setCartApi`); TASK-007 must wire the generated client into it.

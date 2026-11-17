@@ -1,6 +1,6 @@
 # Task: TASK-008 — Zustand v5 store — auth & cart slices
 
-**Status:** active
+**Status:** done
 **Created:** 2026-03-31
 **ADR refs:** ADR-NNNN-zustand-ssr-hydration-strategy (created in TASK-003)
 
@@ -18,12 +18,12 @@ See `docs/02_outputs/05_implementation_plan.md` TASK-008 and the ADR created in 
 
 ## Acceptance Criteria
 
-- [ ] `authSlice` hydrates from `localStorage` on the first client render without React hydration mismatch warnings
-- [ ] `authSlice` exposes: `user`, `accessToken`, `refreshToken`, `login(tokens)`, `logout()`, `setUser(profile)` actions
-- [ ] `cartSlice` accumulates line items client-side; exposes `addItem()`, `removeItem()`, `updateQuantity()`, `clearCart()`, `syncWithServer()` actions
-- [ ] Both slices are combined in the root store (`frontend/lib/store/index.ts`) with correct TypeScript types exported
-- [ ] `make verify` passes with no SSR hydration errors in the browser console
-- [ ] Zustand `persist` middleware is used for `authSlice`; `cartSlice` does not persist (server state is authoritative on load)
+- [x] `authSlice` hydrates from `localStorage` on the first client render without React hydration mismatch warnings
+- [x] `authSlice` exposes: `user`, `accessToken`, `refreshToken`, `login(tokens)`, `logout()`, `setUser(profile)` actions
+- [x] `cartSlice` accumulates line items client-side; exposes `addItem()`, `removeItem()`, `updateQuantity()`, `clearCart()`, `syncWithServer()` actions
+- [x] Both slices are combined in the root store (`frontend/lib/store/index.ts`) with correct TypeScript types exported
+- [x] `make verify` passes with no SSR hydration errors in the browser console
+- [x] Zustand `persist` middleware is used for `authSlice`; `cartSlice` does not persist (server state is authoritative on load)
 
 ## Dependencies
 
