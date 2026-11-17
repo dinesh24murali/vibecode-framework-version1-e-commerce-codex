@@ -9,6 +9,7 @@ Format: `- [YYYY-MM-DD] <task-name>: <one-line summary>`
 
 ## Unreleased
 
+- [2026-11-17] task-019-static-pages: feat: static Wall of Fame, About Us, Terms and Privacy pages with unique titles
 - [2026-11-17] task-018-footer: feat: shop footer with Terms, About, Wall of Fame links and env-configured social icons
 - [2026-11-17] task-017-navbar-mega-menus: feat: shop navbar with Book Store and Printing Services mega-menus, search, cart badge and mobile accordion drawer
 - [2026-11-17] task-016-product-detail-page: feat: /products/[slug] SSG page with image gallery, hover/pinch zoom, Add to Cart toast and per-product metadata
